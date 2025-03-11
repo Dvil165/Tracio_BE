@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-public class Authentication {
+public class AuthenValidation {
     private final UserRepo userRepository;
 
-    public Authentication(UserRepo userRepository) {
+    public AuthenValidation(UserRepo userRepository) {
         this.userRepository = userRepository;
     }
 

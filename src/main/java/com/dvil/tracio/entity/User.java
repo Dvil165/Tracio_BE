@@ -3,7 +3,9 @@ package com.dvil.tracio.entity;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.enums.UserVerifyStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +20,8 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "users")
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements UserDetails {
     // abcccc
     @Id
@@ -43,7 +47,7 @@ public class User implements UserDetails {
     @Column(name = "phone", length = 15)
     private String phone;
 
-    @Column(name = "user_password", nullable = false, length = 20)
+    @Column(name = "user_password", nullable = false)
     private String userPassword;
 
     @Column(name = "user_role", length = 20)

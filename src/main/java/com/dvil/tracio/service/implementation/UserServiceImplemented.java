@@ -4,12 +4,13 @@ import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.enums.UserVerifyStatus;
 import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
-import com.dvil.tracio.mapper.UserMap;
+import com.dvil.tracio.mapper.UserDTOMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
 import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
+import com.dvil.tracio.service.EmailService;
 import com.dvil.tracio.service.UserService;
 import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
@@ -28,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.web.server.ResponseStatusException;
-
 import javax.crypto.SecretKey;
 import java.util.stream.Collectors;
 
@@ -37,22 +37,24 @@ public class UserServiceImplemented implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImplemented.class);
     private final UserRepo userRepository;
     private final AuthenValidation verifyUserRequest;
-    private final UserMap userMapper;
+    private final UserDTOMapper userDTOMapper;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImp userDetailsService;
+    private final EmailService emailService;
 
-    public UserServiceImplemented(UserRepo userRepository, AuthenValidation verifyUserRequest, UserMap userMapper,
+    public UserServiceImplemented(UserRepo userRepository, AuthenValidation verifyUserRequest, UserDTOMapper userDTOMapper,
                                   JwtService jwtService, PasswordEncoder passwordEncoder,
-                                  AuthenticationManager authenticationManager, UserDetailsServiceImp userDetailsService) {
+                                  AuthenticationManager authenticationManager, UserDetailsServiceImp userDetailsService, EmailService emailService) {
         this.userRepository = userRepository;
         this.verifyUserRequest = verifyUserRequest;
-        this.userMapper = userMapper;
+        this.userDTOMapper = userDTOMapper;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
+        this.emailService = emailService;
     }
 
     public RegisterResponse Register(RegisterRequest request) {
@@ -68,14 +70,14 @@ public class UserServiceImplemented implements UserService {
             user.setAccountStatus(UserVerifyStatus.Unverified);
             user.setAccessToken(jwtService.generateAccessToken(user));
             user.setRefToken(jwtService.generateRefreshToken(user));
-            UserDTO dto = userMapper.maptoUserDTO(user);
             SecretKey key = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS384);
             String base64Key = Base64.getEncoder().encodeToString(key.getEncoded());
             logger.info(base64Key);
-            logger.info(dto.getAcc_token());
-            logger.info(dto.getRef_token());
+//            logger.info(dto.getAcc_token());
+//            logger.info(dto.getRef_token());
             userRepository.save(user);
-            return new RegisterResponse("Đăng ký thành công!", dto);
+            emailService.sendVerifyCode(user, "12345", "TEST MAIL", "Ur code: ");
+            return new RegisterResponse("Đăng ký thành công!", userDTOMapper.apply(user));
         } catch (DataIntegrityViolationException ex) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Lỗi khi lưu dữ liệu vào database!");
         }
@@ -117,7 +119,7 @@ public class UserServiceImplemented implements UserService {
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(userMapper::maptoUserDTO)
+                .map(userDTOMapper)
                 .collect(Collectors.toList());
     }
 

@@ -54,7 +54,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 // Nếu token hết hạn, thông báo và logout
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token hết hạn, vui lòng đăng nhập lại.");
-                return;
             }
         }
     }

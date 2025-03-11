@@ -1,16 +1,22 @@
 package com.dvil.tracio.configuration;
 
+import com.dvil.tracio.exception.UsernameNotFoundException;
 import com.dvil.tracio.filter.JwtAuthenticationFilter;
+import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.service.implementation.UserDetailsServiceImp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -22,6 +28,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -33,13 +41,11 @@ public class Security {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String googleClientSecret;
 
-
-
     private final UserDetailsServiceImp userDetailsServiceImp;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
-
-    public Security(UserDetailsServiceImp userDetailsServiceImp, JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2LoginSuccessHandler oauth2LoginSuccessHandler) {
+    public Security(UserDetailsServiceImp userDetailsServiceImp, JwtAuthenticationFilter jwtAuthenticationFilter,
+                    OAuth2LoginSuccessHandler oauth2LoginSuccessHandler) {
         this.userDetailsServiceImp = userDetailsServiceImp;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
@@ -56,6 +62,7 @@ public class Security {
                                     .requestMatchers("/login").permitAll()
                                     .requestMatchers("/api/**").permitAll()
                                     .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                                    .requestMatchers("/shopowner/**").hasAuthority("SHOP_OWNER")
                                     .anyRequest()
                                     .authenticated();
                         })
@@ -86,8 +93,31 @@ public class Security {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+    public UserDetailsService userDetailsService(UserRepo userRepository) {
+        return username -> userRepository.findByUsername(username)
+                .map(user -> new org.springframework.security.core.userdetails.User(
+                        user.getUsername(),
+                        user.getUserPassword(), // Mật khẩu đã mã hóa
+                        Collections.singletonList(new SimpleGrantedAuthority(user.getUserRole().name()))
+                ))
+                .orElseThrow(() -> new UsernameNotFoundException(1));
+    }
+
+
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+//        return configuration.getAuthenticationManager();
+//    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+
+        return new ProviderManager(authenticationProvider);
     }
 
     @Bean

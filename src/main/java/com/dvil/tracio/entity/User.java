@@ -10,8 +10,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +33,7 @@ public class User implements UserDetails {
     @Column(name = "ref_token", length = 10000, nullable = false)
     private String refToken;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "account_status")
     private UserVerifyStatus accountStatus = UserVerifyStatus.Unverified;
 
@@ -50,6 +49,8 @@ public class User implements UserDetails {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "user_role", length = 20)
     private RoleName userRole = RoleName.CYCLIST;
 

@@ -10,8 +10,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -29,10 +27,10 @@ public class User implements UserDetails {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "acc_token", length = 1000, nullable = false)
+    @Column(name = "access_token", length = 1000, nullable = false)
     private String accessToken;
 
-    @Column(name = "ref_token", length = 10000, nullable = false)
+    @Column(name = "refresh_token", length = 10000, nullable = false)
     private String refToken;
 
     @Enumerated(EnumType.STRING)
@@ -51,6 +49,7 @@ public class User implements UserDetails {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
+
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", length = 20)
     private RoleName userRole = RoleName.CYCLIST;
@@ -58,6 +57,11 @@ public class User implements UserDetails {
     @Column(name = "username", nullable = false)
     private String username;
 
+    @Column(name = "reset_password_token", length = 500)
+    private String resetPasswordToken;
+
+    @Column(name = "verification_code", length = 500)
+    private String verificationCode;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

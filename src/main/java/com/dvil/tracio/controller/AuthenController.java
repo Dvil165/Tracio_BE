@@ -1,7 +1,6 @@
 package com.dvil.tracio.controller;
 
 import com.dvil.tracio.dto.UserDTO;
-import com.dvil.tracio.entity.User;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
 import com.dvil.tracio.response.LoginResponse;

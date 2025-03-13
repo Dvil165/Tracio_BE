@@ -32,7 +32,7 @@ public class Product {
     private String type;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shop_id", nullable = false)

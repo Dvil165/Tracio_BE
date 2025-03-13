@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 @Table(name = "shop_services")
 public class ShopService {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "shop_service_id", nullable = false)
     private Integer id;
 

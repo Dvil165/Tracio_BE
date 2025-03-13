@@ -37,8 +37,8 @@ public class WarrantyController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWarranty(@PathVariable Integer id) {
-        warrantyService.deleteWarranty(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteWarranty(@PathVariable Integer id) {
+        return warrantyService.deleteWarranty(id);
     }
+
 }

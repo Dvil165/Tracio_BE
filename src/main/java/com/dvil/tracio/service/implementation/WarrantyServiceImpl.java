@@ -8,6 +8,7 @@ import com.dvil.tracio.repository.ProductRepo;
 import com.dvil.tracio.repository.WarrantyRepo;
 import com.dvil.tracio.service.WarrantyService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
@@ -70,10 +71,11 @@ public class WarrantyServiceImpl implements WarrantyService {
     }
 
     @Override
-    public void deleteWarranty(Integer id) {
+    public ResponseEntity<String> deleteWarranty(Integer id) {
         if (!warrantyRepo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bảo hành không tồn tại");
         }
         warrantyRepo.deleteById(id);
+        return ResponseEntity.ok("Xóa bảo hành thành công!");
     }
 }

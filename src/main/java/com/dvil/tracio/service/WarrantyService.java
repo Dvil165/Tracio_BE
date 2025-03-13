@@ -1,6 +1,8 @@
 package com.dvil.tracio.service;
 
 import com.dvil.tracio.dto.WarrantyDTO;
+import org.springframework.http.ResponseEntity;
+
 import java.util.List;
 
 public interface WarrantyService {
@@ -8,5 +10,5 @@ public interface WarrantyService {
     WarrantyDTO getWarrantyById(Integer id);
     List<WarrantyDTO> getAllWarranties();
     WarrantyDTO updateWarranty(Integer id, WarrantyDTO warrantyDTO);
-    void deleteWarranty(Integer id);
+    ResponseEntity<String> deleteWarranty(Integer id);
 }

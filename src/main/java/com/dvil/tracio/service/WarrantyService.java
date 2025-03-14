@@ -1,6 +1,8 @@
 package com.dvil.tracio.service;
 
 import com.dvil.tracio.dto.WarrantyDTO;
+import org.springframework.http.ResponseEntity;
+
 import java.util.List;
 
 public interface WarrantyService {

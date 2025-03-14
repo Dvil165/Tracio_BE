@@ -51,9 +51,6 @@ public class WarrantyController {
         response.put("message", "Warranty deleted successfully!");
         response.put("deletedWarranty", deletedWarranty);
         return ResponseEntity.ok(response);
-
-        
-
     }
 
 }

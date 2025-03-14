@@ -8,5 +8,5 @@ public interface WarrantyService {
     WarrantyDTO getWarrantyById(Integer id);
     List<WarrantyDTO> getAllWarranties();
     WarrantyDTO updateWarranty(Integer id, WarrantyDTO warrantyDTO);
-    void deleteWarranty(Integer id);
+    WarrantyDTO deleteWarranty(Integer id);
 }

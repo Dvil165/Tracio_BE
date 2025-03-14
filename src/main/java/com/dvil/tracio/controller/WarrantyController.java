@@ -4,8 +4,10 @@ import com.dvil.tracio.dto.WarrantyDTO;
 import com.dvil.tracio.service.WarrantyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/warranties")
@@ -36,9 +38,22 @@ public class WarrantyController {
         return ResponseEntity.ok(warrantyService.updateWarranty(id, warrantyDTO));
     }
 
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<WarrantyDTO> deleteWarranty(@PathVariable Integer id) {
+//        warrantyService.deleteWarranty(id);
+//        return ResponseEntity.noContent().build();
+//    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWarranty(@PathVariable Integer id) {
-        warrantyService.deleteWarranty(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Map<String, Object>> deleteWarranty(@PathVariable Integer id) {
+        WarrantyDTO deletedWarranty = warrantyService.deleteWarranty(id);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Warranty deleted successfully!");
+        response.put("deletedWarranty", deletedWarranty);
+        return ResponseEntity.ok(response);
+
+        
+
     }
+
 }

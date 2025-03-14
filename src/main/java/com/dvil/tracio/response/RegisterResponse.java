@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 public class RegisterResponse {
     private String message;
     private UserDTO user;
+    private String accessToken;
+    private String refreshToken;
 }

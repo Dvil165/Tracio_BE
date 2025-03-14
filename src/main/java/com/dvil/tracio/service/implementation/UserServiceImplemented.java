@@ -5,6 +5,7 @@ import com.dvil.tracio.enums.UserVerifyStatus;
 import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.mapper.UserDTOMapper;
+import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
@@ -30,6 +31,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.springframework.web.server.ResponseStatusException;
 import javax.crypto.SecretKey;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,19 +39,19 @@ public class UserServiceImplemented implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImplemented.class);
     private final UserRepo userRepository;
     private final AuthenValidation verifyUserRequest;
-    private final UserDTOMapper userDTOMapper;
+    private final UserMapper userMapper;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImp userDetailsService;
     private final EmailService emailService;
 
-    public UserServiceImplemented(UserRepo userRepository, AuthenValidation verifyUserRequest, UserDTOMapper userDTOMapper,
+    public UserServiceImplemented(UserRepo userRepository, AuthenValidation verifyUserRequest, UserMapper userMapper,
                                   JwtService jwtService, PasswordEncoder passwordEncoder,
                                   AuthenticationManager authenticationManager, UserDetailsServiceImp userDetailsService, EmailService emailService) {
         this.userRepository = userRepository;
         this.verifyUserRequest = verifyUserRequest;
-        this.userDTOMapper = userDTOMapper;
+        this.userMapper = userMapper;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -57,31 +59,63 @@ public class UserServiceImplemented implements UserService {
         this.emailService = emailService;
     }
 
+//    @Override
+//    public RegisterResponse Register(RegisterRequest request) {
+//        verifyUserRequest.ValidRegister(request);
+//        try {
+//            User user = new User();
+//            user.setEmail(request.getEmail());
+//            user.setUsername(request.getUsername());
+//            user.setUserPassword(passwordEncoder.encode(request.getPassword()));
+//            user.setUserRole(RoleName.CYCLIST);
+//            user.setPhone(request.getPhone());
+//            user.setCreatedAt(Instant.now());
+//            user.setAccountStatus(UserVerifyStatus.Unverified);
+//            user.setAccessToken(jwtService.generateAccessToken(user));
+//            user.setRefToken(jwtService.generateRefreshToken(user));
+//            SecretKey key = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS384);
+//            String base64Key = Base64.getEncoder().encodeToString(key.getEncoded());
+//            logger.info(base64Key);
+////            logger.info(dto.getAcc_token());
+////            logger.info(dto.getRef_token());
+//            userRepository.save(user);
+//            emailService.sendVerifyCode(user, "12345", "TEST MAIL", "Ur code: ");
+//            return new RegisterResponse("Đăng ký thành công!", userDTOMapper.apply(user));
+//        } catch (DataIntegrityViolationException ex) {
+//            throw new ResponseStatusException(HttpStatus.CONFLICT, "Lỗi khi lưu dữ liệu vào database!");
+//        }
+//    }
+
+    @Override
     public RegisterResponse Register(RegisterRequest request) {
         verifyUserRequest.ValidRegister(request);
-        try {
-            User user = new User();
-            user.setEmail(request.getEmail());
-            user.setUsername(request.getUsername());
-            user.setUserPassword(passwordEncoder.encode(request.getPassword()));
-            user.setUserRole(RoleName.CYCLIST);
-            user.setPhone(request.getPhone());
-            user.setCreatedAt(Instant.now());
-            user.setAccountStatus(UserVerifyStatus.Unverified);
-            user.setAccessToken(jwtService.generateAccessToken(user));
-            user.setRefToken(jwtService.generateRefreshToken(user));
-            SecretKey key = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS384);
-            String base64Key = Base64.getEncoder().encodeToString(key.getEncoded());
-            logger.info(base64Key);
-//            logger.info(dto.getAcc_token());
-//            logger.info(dto.getRef_token());
-            userRepository.save(user);
-            emailService.sendVerifyCode(user, "12345", "TEST MAIL", "Ur code: ");
-            return new RegisterResponse("Đăng ký thành công!", userDTOMapper.apply(user));
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Lỗi khi lưu dữ liệu vào database!");
-        }
+        // Tạo User mới
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        user.setUserPassword(passwordEncoder.encode(request.getPassword()));
+        user.setUserRole(RoleName.CYCLIST);
+        user.setPhone(request.getPhone());
+        user.setCreatedAt(Instant.now());
+        user.setAccountStatus(UserVerifyStatus.Unverified);
+        // Tạo JWT Token
+        String accessToken = jwtService.generateAccessToken(user);
+        user.setAccessToken(accessToken);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        user.setRefToken(refreshToken);
+        userRepository.save(user);
+        // Gửi email xác thực
+        String verifyCode = generateVerificationCode();
+        emailService.sendVerifyCode(user, verifyCode, "Xác thực tài khoản", "Mã xác thực của bạn là: ");
+        // Convert User -> DTO
+        UserDTO userDTO = userMapper.toDTO(user);
+        return new RegisterResponse("Đăng ký thành công!", userDTO, accessToken, refreshToken);
     }
+
+    private String generateVerificationCode() {
+        return String.valueOf(new Random().nextInt(900000) + 100000); // Mã 6 chữ số
+    }
+
 
     @Override
     public LoginResponse Login(LoginRequest request) throws Exception {
@@ -115,11 +149,14 @@ public class UserServiceImplemented implements UserService {
         }
     }
 
-
+    @Override
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
+//        return users.stream()
+//                .map(userDTOMapper)
+//                .collect(Collectors.toList());
         return users.stream()
-                .map(userDTOMapper)
+                .map(userMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -130,3 +167,4 @@ public class UserServiceImplemented implements UserService {
 //                .collect(Collectors.toList());
 //    }
 }
+

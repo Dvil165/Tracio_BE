@@ -7,6 +7,9 @@ import com.dvil.tracio.mapper.WarrantyMapper;
 import com.dvil.tracio.repository.ProductRepo;
 import com.dvil.tracio.repository.WarrantyRepo;
 import com.dvil.tracio.service.WarrantyService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -69,11 +72,27 @@ public class WarrantyServiceImpl implements WarrantyService {
         return warrantyMapper.toDTO(warrantyRepo.save(existingWarranty));
     }
 
+//    @Override
+//    public void deleteWarranty(Integer id) {
+//        if (!warrantyRepo.existsById(id)) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bảo hành không tồn tại");
+//        }
+//        warrantyRepo.deleteById(id);
+//    }
+
     @Override
-    public void deleteWarranty(Integer id) {
-        if (!warrantyRepo.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bảo hành không tồn tại");
+    @Transactional
+    public WarrantyDTO deleteWarranty(Integer id) {
+        Warranty warranty = warrantyRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Warranty not found with id: " + id));
+
+        // Xóa liên kết với Product trước khi xóa
+        Product product = warranty.getProduct();
+        if (product != null) {
+            product.setWarranty(null);
         }
-        warrantyRepo.deleteById(id);
+        warrantyRepo.delete(warranty);
+        return warrantyMapper.toDTO(warranty);
     }
+
 }

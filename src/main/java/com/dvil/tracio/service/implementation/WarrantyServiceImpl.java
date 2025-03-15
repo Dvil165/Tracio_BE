@@ -63,7 +63,7 @@ public class WarrantyServiceImpl implements WarrantyService {
 
         Optional<Product> product = productRepo.findById(warrantyDTO.getProductId());
         if (product.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại");
         }
 
         existingWarranty.setWarrantyPeriod(warrantyDTO.getWarrantyPeriod());

@@ -1,9 +1,9 @@
 package com.dvil.tracio.configuration;
 
-
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.util.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +20,9 @@ import java.util.Optional;
 public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     @Autowired
     private UserRepo userRepository;
+    @Autowired
+    private JwtService jwtService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         OAuth2User oauth2User = (DefaultOAuth2User) authentication.getPrincipal();
@@ -38,6 +41,8 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             user.setUserPassword("12345");
             user.setPhone("123456789");
             //user.setAddress(null);
+            user.setAccessToken(jwtService.generateAccessToken(user));
+            user.setAccessToken(jwtService.generateRefreshToken(user));
             userRepository.save(user);
         }
         this.setAlwaysUseDefaultTargetUrl(true);

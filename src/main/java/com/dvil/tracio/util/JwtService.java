@@ -3,15 +3,23 @@ package com.dvil.tracio.util;
 
 import com.dvil.tracio.enums.TokenType;
 import com.dvil.tracio.entity.User;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 
@@ -29,6 +37,15 @@ public class JwtService {
     @Value("${JWT_FORGOT_PASSWORD_TOKEN_EXPIRATION}")
     private long forgotTokenExpiration;
 
+    public JwtService() {
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+            SecretKey sk = keyGen.generateKey();
+            SECRET_KEY = Encoders.BASE64URL.encode(sk.getEncoded()); // Sử dụng BASE64URL
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -39,13 +56,12 @@ public class JwtService {
         return (username.equals(user.getUsername())) && !isTokenExpired(token);
     }
 
-
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
-        Claims claims = extractAllClaims(token);
+        final Claims claims = extractAllClaims(token);
         return resolver.apply(claims);
     }
 
@@ -62,14 +78,29 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String generateToken(User user, long expirationMillis, String TOKEN_TYPE) {
+    public String generateToken(User user,
+                                long expirationMillis, String TOKEN_TYPE) {
+        Map<String, Object> claims = new HashMap<>();
+
         return Jwts.builder()
+                .claims()
+                .add(claims)
                 .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationMillis))
-                .claim("Token_Type", TOKEN_TYPE)
+                .and()
+                .claim("TOKEN_TYPE: ", TOKEN_TYPE)
                 .signWith(getSigninKey())
                 .compact();
+    }
+
+    private SecretKey getSigninKey() {
+        byte[] keyByte = Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyByte);
+    }
+
+    public String getSecretKeyAsString() {
+        return Base64.getEncoder().encodeToString(getSigninKey().getEncoded());
     }
 
     public String generateEmailVerifyToken(User user) {
@@ -88,10 +119,6 @@ public class JwtService {
         return generateToken(user, forgotTokenExpiration, TokenType.ForgotPasswordToken.name());
     }
 
-    private SecretKey getSigninKey() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
 }
 
 

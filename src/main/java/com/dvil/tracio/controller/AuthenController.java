@@ -1,39 +1,50 @@
 package com.dvil.tracio.controller;
 
 import com.dvil.tracio.dto.UserDTO;
+import com.dvil.tracio.entity.User;
+import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
 import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
+import com.dvil.tracio.service.implementation.AuthenServiceImpl;
 import com.dvil.tracio.service.implementation.UserServiceImplemented;
+import com.dvil.tracio.util.JwtService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping({"/api/user"})
+@RequestMapping({"/api/auth"})
 public class AuthenController {
-    private final UserServiceImplemented userService;
 
-    public AuthenController(UserServiceImplemented userService) {
-        this.userService = userService;
+
+    private final UserRepo userRepo;
+
+    private final AuthenServiceImpl authenService;
+    private final JwtService jwtService;
+
+    public AuthenController(UserRepo userRepo, AuthenServiceImpl authenService, JwtService jwtService) {
+        this.userRepo = userRepo;
+        this.authenService = authenService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping({"/register"})
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) throws Exception {
-        return ResponseEntity.ok(userService.Register(request));
+        return ResponseEntity.ok(authenService.Register(request));
     }
+
 
     @PostMapping({"/login"})
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) throws Exception {
-        return ResponseEntity.ok(userService.Login(request));
+    public String login(@RequestBody LoginRequest request) throws Exception {
+        System.out.println(request.getUsername());
+        User user = userRepo.findByUsername(request.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return authenService.authenticate(request);
     }
 
 
-    @GetMapping({"/all"})
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
 }

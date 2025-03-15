@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 @Component
@@ -32,29 +31,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        String authHeader
+        final String authHeader
                 = request.getHeader("Authorization");
-
+        final String username;
+        final String jwtToken;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
+        jwtToken = authHeader.substring(7);
+        username = jwtService.extractUsername(jwtToken);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isValid(token, userDetails)) {
+            if (jwtService.isTokenExpired(jwtToken)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"error\": \"Token hết hạn, vui lòng đăng nhập lại.\"}");
+                return;
+            }
+
+            if (jwtService.isValid(jwtToken, userDetails)) {
                 // Nếu token hợp lệ, set authentication
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
+                authToken
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-            } else {
-                // Nếu token hết hạn, thông báo và logout
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token hết hạn, vui lòng đăng nhập lại.");
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+        filterChain.doFilter(request, response);
     }
 }

@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/products")
@@ -25,7 +25,7 @@ public class ProductController {
             List<ProductDTO> products = productService.getAllProducts();
             return ResponseEntity.ok(products);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 
@@ -35,7 +35,7 @@ public class ProductController {
             ProductDTO product = productService.getProductById(id);
             return ResponseEntity.ok(product);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 
@@ -45,7 +45,7 @@ public class ProductController {
             ProductDTO createdProduct = productService.createProduct(productDTO);
             return ResponseEntity.ok(Map.of("message", "Sản phẩm đã được tạo thành công!", "product", createdProduct));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 
@@ -55,7 +55,7 @@ public class ProductController {
             ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
             return ResponseEntity.ok(Map.of("message", "Cập nhật sản phẩm thành công!", "product", updatedProduct));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 
@@ -65,7 +65,7 @@ public class ProductController {
             productService.deleteProduct(id);
             return ResponseEntity.ok(Map.of("message", "Sản phẩm với ID " + id + " đã bị xóa thành công!"));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 }

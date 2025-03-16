@@ -10,6 +10,5 @@ public interface SrviceMapper {
     SrviceMapper INSTANCE = Mappers.getMapper(SrviceMapper.class);
 
     SrviceDTO toDTO(Srvice srvice);
-
     Srvice toEntity(SrviceDTO srviceDTO);
 }

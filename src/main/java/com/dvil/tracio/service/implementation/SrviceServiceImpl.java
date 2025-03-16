@@ -5,8 +5,11 @@ import com.dvil.tracio.entity.Srvice;
 import com.dvil.tracio.mapper.SrviceMapper;
 import com.dvil.tracio.repository.SrviceRepo;
 import com.dvil.tracio.service.SrviceService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,46 +24,52 @@ public class SrviceServiceImpl implements SrviceService {
     }
 
     @Override
-    public List<SrviceDTO> getAllSrvices() {
-        return srviceRepo.findAll().stream()
+    public List<SrviceDTO> getAllServices() {
+        List<SrviceDTO> services = srviceRepo.findAll().stream()
                 .map(srviceMapper::toDTO)
                 .collect(Collectors.toList());
+
+        if (services.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có dịch vụ nào trong hệ thống");
+        }
+        return services;
     }
 
     @Override
-    public SrviceDTO getSrviceById(Integer id) {
+    public SrviceDTO getServiceById(Integer id) {
         Srvice srvice = srviceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Srvice not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dịch vụ với ID " + id + " không tồn tại"));
+
         return srviceMapper.toDTO(srvice);
     }
 
     @Override
     @Transactional
-    public SrviceDTO createSrvice(SrviceDTO srviceDTO) {
+    public SrviceDTO createService(SrviceDTO srviceDTO) {
         Srvice srvice = srviceMapper.toEntity(srviceDTO);
         srvice.setCreatedAt(OffsetDateTime.now());
-        srvice = srviceRepo.save(srvice);
-        return srviceMapper.toDTO(srvice);
+
+        return srviceMapper.toDTO(srviceRepo.save(srvice));
     }
 
     @Override
     @Transactional
-    public SrviceDTO updateSrvice(Integer id, SrviceDTO srviceDTO) {
+    public SrviceDTO updateService(Integer id, SrviceDTO srviceDTO) {
         Srvice existingSrvice = srviceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Srvice not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dịch vụ với ID " + id + " không tồn tại"));
 
         existingSrvice.setServName(srviceDTO.getServName());
         existingSrvice.setServDescription(srviceDTO.getServDescription());
 
-        srviceRepo.save(existingSrvice);
-        return srviceMapper.toDTO(existingSrvice);
+        return srviceMapper.toDTO(srviceRepo.save(existingSrvice));
     }
 
     @Override
     @Transactional
-    public void deleteSrvice(Integer id) {
+    public void deleteService(Integer id) {
         Srvice srvice = srviceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Srvice not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dịch vụ với ID " + id + " không tồn tại"));
+
         srviceRepo.delete(srvice);
     }
 }

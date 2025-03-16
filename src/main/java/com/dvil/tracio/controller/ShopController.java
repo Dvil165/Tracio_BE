@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/shops")
@@ -29,7 +30,7 @@ public class ShopController {
         try {
             return ResponseEntity.ok(shopService.getShopById(id));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 

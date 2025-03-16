@@ -60,7 +60,7 @@ public class AuthenServiceImpl implements AuthenticationService {
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setUserPassword(encoder.encode(request.getPassword()));
-        user.setUserRole(RoleName.CYCLIST);
+        user.setUserRole(RoleName.ADMIN);
         user.setPhone(request.getPhone());
         user.setCreatedAt(Instant.now());
         user.setAccountStatus(UserVerifyStatus.Unverified);
@@ -96,8 +96,7 @@ public class AuthenServiceImpl implements AuthenticationService {
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         if(auth.isAuthenticated())
-            return "success";
-
+            return jwtService.generateAccessToken(user);
         return "fail";
     }
 

@@ -6,9 +6,12 @@ import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.service.UserService;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import org.slf4j.Logger;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +32,14 @@ public class UserServiceImplemented implements UserService {
         return users.stream()
                 .map(userMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteUserById(Integer id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        userRepository.deleteById(id);
     }
 
 

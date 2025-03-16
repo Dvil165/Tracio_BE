@@ -1,16 +1,23 @@
 package com.dvil.tracio.configuration;
 
+import com.dvil.tracio.exception.CustomAccessDeniedHandler;
+import com.dvil.tracio.exception.CustomAuthenticationEntryPoint;
 import com.dvil.tracio.filter.JwtAuthenticationFilter;
 import com.dvil.tracio.service.implementation.UserDetailsServiceImp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
@@ -33,25 +40,55 @@ public class Security {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final UserDetailsServiceImp userDetailsServiceImp;
+    private final UserDetailsService userDetailsService;
 
-    public Security(JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2LoginSuccessHandler oauth2LoginSuccessHandler, UserDetailsServiceImp userDetailsServiceImp) {
+    public Security(JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2LoginSuccessHandler oauth2LoginSuccessHandler, UserDetailsServiceImp userDetailsServiceImp, UserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
         this.userDetailsServiceImp = userDetailsServiceImp;
+        this.userDetailsService = userDetailsService;
     }
 
 
     @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+        provider.setUserDetailsService(userDetailsService);
+        return provider;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AuthenticationProvider authenticationProvider)
+                                                   AuthenticationProvider authenticationProvider,
+                                                   CustomAccessDeniedHandler customAccessDeniedHandler,
+                                                   CustomAuthenticationEntryPoint customAuthenticationEntryPoint)
             throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfiguration()))
                 .authorizeHttpRequests( req ->
-                        req.requestMatchers("/api/auth/**").permitAll()
-                                .anyRequest().authenticated())
+                    req.requestMatchers("/api/auth/**")
+                            .permitAll()
+                            .requestMatchers("/api/user/**").hasAuthority("ADMIN")
+                            .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oauth2LoginSuccessHandler) // Xử lý khi đăng nhập thành công
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint) // Xử lý lỗi 401
+                        .accessDeniedHandler(customAccessDeniedHandler) // Xử lý lỗi 403
+                )
+                .httpBasic(Customizer.withDefaults())
                 .userDetailsService(userDetailsServiceImp)
+                .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -81,33 +118,6 @@ public class Security {
 //                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 //                .build();
 //    }
-
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
-//        return http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .cors(cors -> cors.configurationSource(corsConfiguration()))
-//                .authorizeHttpRequests(req -> {
-//                    req
-//                            .requestMatchers("/login").permitAll()
-//                            .requestMatchers("/api/auth/**").permitAll()
-//                            .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-//                            .requestMatchers("/api/shopowner/**").hasAuthority("SHOP_OWNER")
-//                            .anyRequest().authenticated();
-//                })
-//                .oauth2Login(oauth2 -> oauth2.successHandler(oauth2LoginSuccessHandler))
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authenticationProvider(authenticationProvider)
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .exceptionHandling(ex -> ex
-//                        .authenticationEntryPoint((request, response, authException) -> {
-//                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-//                        })
-//                )
-//                .build();
-//    }
-
-
 
     @Bean
     CorsConfigurationSource corsConfiguration() {

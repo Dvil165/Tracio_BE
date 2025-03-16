@@ -43,7 +43,6 @@ public class WarrantyController {
 //        warrantyService.deleteWarranty(id);
 //        return ResponseEntity.noContent().build();
 //    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deleteWarranty(@PathVariable Integer id) {
         WarrantyDTO deletedWarranty = warrantyService.deleteWarranty(id);
@@ -53,4 +52,5 @@ public class WarrantyController {
         return ResponseEntity.ok(response);
     }
 
+    
 }

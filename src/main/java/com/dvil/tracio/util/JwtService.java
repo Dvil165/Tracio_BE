@@ -13,10 +13,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,9 +48,9 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public boolean isValid(String token, UserDetails user) {
-        String username = extractUsername(token);
-        return (username.equals(user.getUsername())) && !isTokenExpired(token);
+    public boolean isValidToken(String token, UserDetails user) {
+        final String username = extractUsername(token);
+        return (username.equals(user.getUsername()) && !isTokenExpired(token));
     }
 
     public boolean isTokenExpired(String token) {
@@ -89,7 +86,7 @@ public class JwtService {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationMillis))
                 .and()
-                .claim("TOKEN_TYPE: ", TOKEN_TYPE)
+                .claim("TOKEN_TYPE", TOKEN_TYPE)
                 .signWith(getSigninKey())
                 .compact();
     }
@@ -99,9 +96,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyByte);
     }
 
-    public String getSecretKeyAsString() {
-        return Base64.getEncoder().encodeToString(getSigninKey().getEncoded());
-    }
 
     public String generateEmailVerifyToken(User user) {
         return generateToken(user, accessTokenExpiration, TokenType.EmailVerificationToken.name());

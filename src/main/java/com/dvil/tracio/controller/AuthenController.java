@@ -1,20 +1,16 @@
 package com.dvil.tracio.controller;
 
-import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
-import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.implementation.AuthenServiceImpl;
-import com.dvil.tracio.service.implementation.UserServiceImplemented;
 import com.dvil.tracio.util.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping({"/api/auth"})

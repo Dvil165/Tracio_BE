@@ -3,6 +3,8 @@ package com.dvil.tracio.configuration;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.service.EmailService;
+import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +18,7 @@ import org.springframework.security.web.authentication.SavedRequestAwareAuthenti
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Random;
 
 @Component
 public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
@@ -23,6 +26,10 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     private UserRepo userRepository;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private AuthenValidation authenValidation;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -30,13 +37,20 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         OAuth2User oauth2User = (DefaultOAuth2User) authentication.getPrincipal();
         String email = oauth2User.getAttribute("email");
-        //String firstName = oauth2User.getAttribute("given_name");
-        //String lastName = oauth2User.getAttribute("family_name");
         String accessToken = "";
         String refreshToken = "";
 
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
+        //authenValidation.ValidRegister(request);
+
+        if (optionalUser.isPresent()) {
+            // Nếu email đã được sử dụng, trả về lỗi 400
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Email đã được sử dụng. Vui lòng đăng nhập hoặc sử dụng email khác.\"}");
+            response.getWriter().flush();
+            return;
+        } else {
             User user = new User();
             user.setEmail(email);
             //user.setFirstName(firstName);
@@ -50,13 +64,19 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             refreshToken = jwtService.generateRefreshToken(user);
             user.setAccessToken(accessToken);
             user.setRefToken(refreshToken);
+            String verifyCode = generateVerificationCode();
+            emailService.sendVerifyCode(user, verifyCode, "Xác thực tài khoản", "Mã xác thực của bạn là: ");
             userRepository.save(user);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"accessToken\":\"" + accessToken + "\", \"refreshToken\":\"" + refreshToken + "\"}");
+            response.getWriter().flush();
+            this.setAlwaysUseDefaultTargetUrl(true);
+            this.setDefaultTargetUrl("http://localhost:5173");
+            super.onAuthenticationSuccess(request, response, authentication);
         }
-        response.setContentType("application/json");
-        response.getWriter().write("{\"accessToken\":\"" + accessToken + "\", \"refreshToken\":\"" + refreshToken + "\"}");
-        response.getWriter().flush();
-        this.setAlwaysUseDefaultTargetUrl(true);
-        this.setDefaultTargetUrl("http://localhost:5173");
-        super.onAuthenticationSuccess(request, response, authentication);
+    }
+
+    private String generateVerificationCode() {
+        return String.valueOf(new Random().nextInt(900000) + 100000); // Mã 6 chữ số
     }
 }

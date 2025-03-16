@@ -16,12 +16,16 @@ import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.Instant;
 import java.util.Random;
 
@@ -56,11 +60,12 @@ public class AuthenServiceImpl implements AuthenticationService {
         // xử lí input của user
         verifyUserRequest.ValidRegister(request);
         // Tạo User mới
+        RoleName role = (request.getRole() != null) ? request.getRole() : RoleName.CYCLIST;
         User user = new User();
         user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
         user.setUserPassword(encoder.encode(request.getPassword()));
-        user.setUserRole(RoleName.ADMIN);
+        user.setUserRole(role);
         user.setPhone(request.getPhone());
         user.setCreatedAt(Instant.now());
         user.setAccountStatus(UserVerifyStatus.Unverified);
@@ -74,7 +79,6 @@ public class AuthenServiceImpl implements AuthenticationService {
         // Gửi email xác thực
         String verifyCode = generateVerificationCode();
         emailService.sendVerifyCode(user, verifyCode, "Xác thực tài khoản", "Mã xác thực của bạn là: ");
-
         // Convert User -> DTO
         UserDTO userDTO = userMapper.toDTO(user);
         return new RegisterResponse("Đăng ký thành công!", userDTO, accessToken, refreshToken);
@@ -83,21 +87,19 @@ public class AuthenServiceImpl implements AuthenticationService {
     @Override
     public String authenticate(LoginRequest request) throws Exception {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(request.getUsername()));
-//        logger.info(user.getAccessToken());
-//        Date expirationDate = jwtService.extractExpiration(user.getAccessToken());
-//        logger.info("Token expiration: " + expirationDate);
-//        logger.info("Current time: " + new Date());
-//        logger.info("Token expired? " + jwtService.isTokenExpired(user.getAccessToken()));
-//        if (jwtService.isTokenExpired(user.getAccessToken())){
-//            user.setAccessToken(jwtService.generateAccessToken(user));
-//            userRepository.save(user);
-//        }
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        if(auth.isAuthenticated())
-            return jwtService.generateAccessToken(user);
-        return "fail";
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu"));
+
+        try {
+            Authentication auth = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            if (auth.isAuthenticated()) {
+                return jwtService.generateAccessToken(user);
+            }
+        } catch (BadCredentialsException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu");
+        }
+
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Xác thực thất bại");
     }
 
     private String generateVerificationCode() {

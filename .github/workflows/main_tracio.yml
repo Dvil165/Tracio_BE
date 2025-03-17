@@ -52,9 +52,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DFC51D7C35A942AAB2492C10D3A06550 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D446643EAC8C4A4FAC913A254077EDB5 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0AE88EFEBBE6453AB0B034F359CF5727 }}
+          client-id: ${{ secrets.__clientidsecretname__ }}
+          tenant-id: ${{ secrets.__tenantidsecretname__ }}
+          subscription-id: ${{ secrets.__subscriptionidsecretname__ }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -63,4 +63,3 @@ jobs:
           app-name: 'tracio'
           slot-name: 'Production'
           package: '*.jar'
-          

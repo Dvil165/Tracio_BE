@@ -5,7 +5,7 @@ import com.dvil.tracio.entity.Order;
 import com.dvil.tracio.entity.OrderDetail;
 import com.dvil.tracio.entity.Product;
 import com.dvil.tracio.mapper.OrderDetailMapper;
-import com.dvil.tracio.repository.OrderDetailRepo;
+import com.dvil.tracio.repository.OrderDetailRepository;
 import com.dvil.tracio.repository.OrderRepo;
 import com.dvil.tracio.repository.ProductRepo;
 import com.dvil.tracio.service.OrderDetailService;
@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderDetailServiceImpl implements OrderDetailService {
-    private final OrderDetailRepo orderDetailRepo;
+    private final OrderDetailRepository orderDetailRepo;
     private final OrderRepo orderRepo;
     private final ProductRepo productRepo;
     private final OrderDetailMapper orderDetailMapper = OrderDetailMapper.INSTANCE;
 
-    public OrderDetailServiceImpl(OrderDetailRepo orderDetailRepo, OrderRepo orderRepo, ProductRepo productRepo) {
+    public OrderDetailServiceImpl(OrderDetailRepository orderDetailRepo, OrderRepo orderRepo, ProductRepo productRepo) {
         this.orderDetailRepo = orderDetailRepo;
         this.orderRepo = orderRepo;
         this.productRepo = productRepo;

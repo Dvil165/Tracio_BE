@@ -1,18 +1,7 @@
 package com.dvil.tracio;
 
-import com.dvil.tracio.entity.User;
-import com.dvil.tracio.enums.RoleName;
-import com.dvil.tracio.enums.UserVerifyStatus;
-import com.dvil.tracio.repository.RoleRepo;
-import com.dvil.tracio.repository.UserRepo;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 
 @SpringBootApplication
 public class TracioApplication {

@@ -1,6 +1,5 @@
 package com.dvil.tracio.enums;
 
-
 public enum RoleName {
     ADMIN,
     CYCLIST,

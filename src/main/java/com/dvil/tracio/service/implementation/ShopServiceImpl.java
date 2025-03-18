@@ -3,6 +3,7 @@ package com.dvil.tracio.service.implementation;
 import com.dvil.tracio.dto.ShopDTO;
 import com.dvil.tracio.entity.Shop;
 import com.dvil.tracio.entity.User;
+import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.mapper.ShopMapper;
 import com.dvil.tracio.repository.ShopRepo;
 import com.dvil.tracio.repository.UserRepo;
@@ -27,16 +28,21 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public ShopDTO createShop(ShopDTO shopDTO, Integer ownerId) {
+    public String createShop(ShopDTO shopDTO, Integer ownerId) {
         User owner = userRepo.findById(ownerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
 
         Shop shop = shopMapper.toEntity(shopDTO);
-        shop.setOwner(owner);
-        shop.setCreatedAt(OffsetDateTime.now());
+        if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
+            return "fail";
+        }
+            shop.setOwner(owner);
+            shop.setCreatedAt(OffsetDateTime.now());
 
-        shop = shopRepo.save(shop);
-        return shopMapper.toDTO(shop);
+            shopRepo.save(shop);
+            return "ok";
+
+
     }
 
     @Override

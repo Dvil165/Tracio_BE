@@ -21,7 +21,7 @@ public class ShopController {
     }
 
     @PostMapping("/{ownerId}")
-    public ResponseEntity<ShopDTO> createShop(@RequestBody ShopDTO shopDTO, @PathVariable Integer ownerId) {
+    public ResponseEntity<String> createShop(@RequestBody ShopDTO shopDTO, @PathVariable Integer ownerId) {
         return ResponseEntity.ok(shopService.createShop(shopDTO, ownerId));
     }
 

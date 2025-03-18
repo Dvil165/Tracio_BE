@@ -4,7 +4,7 @@ import com.dvil.tracio.dto.ShopDTO;
 import java.util.List;
 
 public interface ShopService {
-    ShopDTO createShop(ShopDTO shopDTO, Integer ownerId);
+    String createShop(ShopDTO shopDTO, Integer ownerId);
 
     ShopDTO getShopById(Integer id);
 

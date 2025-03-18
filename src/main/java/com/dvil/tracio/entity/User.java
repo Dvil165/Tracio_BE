@@ -27,10 +27,10 @@ public class User implements UserDetails {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "access_token", length = 1000, nullable = false)
+    @Column(name = "acc_token", length = 1000, nullable = false)
     private String accessToken;
 
-    @Column(name = "refresh_token", length = 10000, nullable = false)
+    @Column(name = "ref_token", length = 10000, nullable = false)
     private String refToken;
 
     @Enumerated(EnumType.STRING)

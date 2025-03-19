@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -27,10 +28,10 @@ public class User implements UserDetails {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "acc_token", length = 1000, nullable = false)
+    @Column(name = "access_token", length = 1000, nullable = false)
     private String accessToken;
 
-    @Column(name = "ref_token", length = 10000, nullable = false)
+    @Column(name = "refresh_token", length = 10000, nullable = false)
     private String refToken;
 
     @Enumerated(EnumType.STRING)
@@ -49,9 +50,8 @@ public class User implements UserDetails {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", length = 20)
-    private RoleName userRole = RoleName.CYCLIST;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<UserRole> userRoles;
 
     @Column(name = "username", nullable = false)
     private String username;
@@ -62,9 +62,14 @@ public class User implements UserDetails {
     @Column(name = "verification_code", length = 500)
     private String verificationCode;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;  // Mặc định là true
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(userRole.name()));
+        return userRoles.stream()
+                .map(userRole -> new SimpleGrantedAuthority(userRole.getRole().name()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -89,6 +94,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return isActive;
     }
 }

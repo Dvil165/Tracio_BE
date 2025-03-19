@@ -17,16 +17,13 @@ public class RouteDetail {
     private Integer id;
 
     @Lob
-    @Column(name = "path_data", nullable = false)
-    private String pathData;
+    @Column(name = "path_data", columnDefinition = "NVARCHAR(MAX)", nullable = false)
+    private String pathData; // Lưu JSON hoặc danh sách tọa độ
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "route_id", nullable = false)
     private Route route;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 }
+

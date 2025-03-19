@@ -27,6 +27,7 @@ public class ShopServiceImpl implements ShopService {
         this.shopMapper = shopMapper;
     }
 
+<<<<<<< HEAD
     @Override
     public String createShop(ShopDTO shopDTO, Integer ownerId) {
         User owner = userRepo.findById(ownerId)
@@ -44,6 +45,25 @@ public class ShopServiceImpl implements ShopService {
 
 
     }
+=======
+//    @Override
+//    public String createShop(ShopDTO shopDTO, Integer ownerId) {
+//        User owner = userRepo.findById(ownerId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+//
+//        Shop shop = shopMapper.toEntity(shopDTO);
+//        if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
+//            return "fail";
+//        }
+//            shop.setOwner(owner);
+//            shop.setCreatedAt(OffsetDateTime.now());
+//
+//            shopRepo.save(shop);
+//            return "ok";
+//
+//
+//    }
+>>>>>>> main
 
     @Override
     public ShopDTO getShopById(Integer id) {

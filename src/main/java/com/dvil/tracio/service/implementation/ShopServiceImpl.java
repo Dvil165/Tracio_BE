@@ -27,23 +27,23 @@ public class ShopServiceImpl implements ShopService {
         this.shopMapper = shopMapper;
     }
 
-    @Override
-    public String createShop(ShopDTO shopDTO, Integer ownerId) {
-        User owner = userRepo.findById(ownerId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
-
-        Shop shop = shopMapper.toEntity(shopDTO);
-        if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
-            return "fail";
-        }
-            shop.setOwner(owner);
-            shop.setCreatedAt(OffsetDateTime.now());
-
-            shopRepo.save(shop);
-            return "ok";
-
-
-    }
+//    @Override
+//    public String createShop(ShopDTO shopDTO, Integer ownerId) {
+//        User owner = userRepo.findById(ownerId)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+//
+//        Shop shop = shopMapper.toEntity(shopDTO);
+//        if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
+//            return "fail";
+//        }
+//            shop.setOwner(owner);
+//            shop.setCreatedAt(OffsetDateTime.now());
+//
+//            shopRepo.save(shop);
+//            return "ok";
+//
+//
+//    }
 
     @Override
     public ShopDTO getShopById(Integer id) {

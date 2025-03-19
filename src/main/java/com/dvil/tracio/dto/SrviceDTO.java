@@ -8,5 +8,4 @@ public class SrviceDTO {
     private Integer id;
     private String servName;
     private String servDescription;
-    private OffsetDateTime createdAt;
 }

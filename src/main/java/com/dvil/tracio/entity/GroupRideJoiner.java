@@ -19,7 +19,7 @@ public class GroupRideJoiner {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "group_ride_id", nullable = false)
-    private GroupRides groupRide;
+    private GroupRide groupRide;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)

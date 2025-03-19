@@ -19,7 +19,7 @@ public class Shop {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "open_hours")
@@ -39,5 +39,11 @@ public class Shop {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    // Set thời gian tạo tự động
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
 
 }

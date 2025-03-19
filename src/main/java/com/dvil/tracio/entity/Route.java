@@ -16,6 +16,9 @@ public class Route {
     @Column(name = "route_id", nullable = false)
     private Integer id;
 
+    @Column(name = "created_by_user")
+    private String username;
+
     @Column(name = "route_length")
     private Double routeLength;
 
@@ -34,8 +37,5 @@ public class Route {
     @Column(name = "location")
     private String location;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "created_by_user_id", nullable = false)
-    private User createdBy;
+
 }

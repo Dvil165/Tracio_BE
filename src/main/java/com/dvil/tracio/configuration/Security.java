@@ -37,6 +37,11 @@ public class Security {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String googleClientSecret;
 
+    private static final String[] ADMIN_URLS = {
+            "/api/user/**",
+            "/api/admin/**"
+    };
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final UserDetailsServiceImp userDetailsServiceImp;
@@ -76,8 +81,10 @@ public class Security {
                 .authorizeHttpRequests( req ->
                     req.requestMatchers("/api/auth/**")
                             .permitAll()
-                            .requestMatchers("/api/user/**").hasAuthority("ADMIN")
-                            .anyRequest().authenticated()
+                            .requestMatchers(ADMIN_URLS)
+                            .hasAuthority("ADMIN")
+                            .anyRequest()
+                            .authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oauth2LoginSuccessHandler) // Xử lý khi đăng nhập thành công
@@ -94,30 +101,6 @@ public class Security {
                 .build();
     }
 
-
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
-//        return http
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .cors(cors -> cors.configurationSource(corsConfiguration()))
-//                .authorizeHttpRequests(
-//                        req -> {
-//                            req
-//                                    .requestMatchers("/api/auth/**").permitAll()
-//                                    .requestMatchers("/api/user/**").hasAuthority("ADMIN")
-//                                    .requestMatchers("api/admin/**").hasAuthority("ADMIN")
-//                                    .requestMatchers("api/shopowner/**").hasAuthority("SHOP_OWNER")
-//                                    .anyRequest()
-//                                    .authenticated();
-//                        })
-//                .oauth2Login(oauth2 -> {
-//                    oauth2.successHandler(oauth2LoginSuccessHandler);
-//                })
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .authenticationProvider(authenticationProvider)
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .build();
-//    }
 
     @Bean
     CorsConfigurationSource corsConfiguration() {

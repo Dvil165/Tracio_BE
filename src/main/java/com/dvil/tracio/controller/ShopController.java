@@ -20,10 +20,10 @@ public class ShopController {
         this.shopService = shopService;
     }
 
-    @PostMapping("/{ownerId}")
-    public ResponseEntity<String> createShop(@RequestBody ShopDTO shopDTO, @PathVariable Integer ownerId) {
-        return ResponseEntity.ok(shopService.createShop(shopDTO, ownerId));
-    }
+//    @PostMapping("/{ownerId}")
+//    public ResponseEntity<String> createShop(@RequestBody ShopDTO shopDTO, @PathVariable Integer ownerId) {
+//        return ResponseEntity.ok(shopService.createShop(shopDTO, ownerId));
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getShopById(@PathVariable Integer id) {

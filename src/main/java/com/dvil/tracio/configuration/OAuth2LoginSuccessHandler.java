@@ -1,8 +1,10 @@
 package com.dvil.tracio.configuration;
 
 import com.dvil.tracio.entity.User;
+import com.dvil.tracio.entity.UserRole;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.repository.UserRoleRepo;
 import com.dvil.tracio.service.EmailService;
 import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
@@ -30,6 +32,8 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     private EmailService emailService;
     @Autowired
     private AuthenValidation authenValidation;
+    @Autowired
+    private UserRoleRepo userRoleRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -56,7 +60,9 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
             //user.setFirstName(firstName);
             //user.setLastName(lastName);
             user.setUsername(email); // Or any other unique username logic
-            user.setUserRole(RoleName.CYCLIST); // default role
+            // Gán role mặc định là CYCLIST
+            UserRole userRole = new UserRole(user, RoleName.CYCLIST);
+            userRoleRepository.save(userRole);
             user.setUserPassword(encoder.encode("12345"));
             user.setPhone("123456789");
             //user.setAddress(null);

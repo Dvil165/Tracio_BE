@@ -34,13 +34,13 @@ public class ShopServiceImpl implements ShopService {
 
         Shop shop = shopMapper.toEntity(shopDTO);
         if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
-            return "fail";
+            return "Bạn không có quyền tạo SHop";
         }
             shop.setOwner(owner);
             shop.setCreatedAt(OffsetDateTime.now());
 
             shopRepo.save(shop);
-            return "ok";
+            return "Shop đã được tạo thành công";
 
 
     }

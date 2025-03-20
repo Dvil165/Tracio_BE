@@ -23,10 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 
@@ -58,7 +55,6 @@ public class AuthenServiceImpl implements AuthenticationService {
     @Override
     public RegisterResponse Register(RegisterRequest request) {
         verifyUserRequest.ValidRegister(request);
-
         // Tạo User mới
         User newUser = new User();
         newUser.setEmail(request.getEmail());

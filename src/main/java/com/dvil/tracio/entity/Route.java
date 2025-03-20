@@ -37,5 +37,4 @@ public class Route {
     @Column(name = "location")
     private String location;
 
-
 }

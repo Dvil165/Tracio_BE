@@ -11,5 +11,4 @@ public class RouteDTO {
     private String startLocation;
     private String destination;
     private String location;
-    private Integer createdByUserId;
 }

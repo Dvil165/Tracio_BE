@@ -5,8 +5,9 @@ import java.util.List;
 
 public interface RouteDetailService {
     List<RouteDetailDTO> getAllRouteDetails();
+    List<RouteDetailDTO> getRouteDetailsByRouteId(Integer routeId);
     RouteDetailDTO getRouteDetailById(Integer id);
-    RouteDetailDTO createRouteDetail(RouteDetailDTO routeDetailDTO, Integer userId);
-    RouteDetailDTO updateRouteDetail(Integer id, RouteDetailDTO routeDetailDTO, Integer userId);
-    void deleteRouteDetail(Integer id, Integer userId);
+    RouteDetailDTO createRouteDetail(RouteDetailDTO routeDetailDTO);
+    RouteDetailDTO updateRouteDetail(Integer id, RouteDetailDTO routeDetailDTO);
+    void deleteRouteDetail(Integer id);
 }

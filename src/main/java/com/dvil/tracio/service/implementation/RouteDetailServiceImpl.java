@@ -1,12 +1,11 @@
 package com.dvil.tracio.service.implementation;
 
 import com.dvil.tracio.dto.RouteDetailDTO;
+import com.dvil.tracio.entity.Route;
 import com.dvil.tracio.entity.RouteDetail;
-import com.dvil.tracio.entity.User;
-import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.mapper.RouteDetailMapper;
 import com.dvil.tracio.repository.RouteDetailRepo;
-import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.repository.RouteRepo;
 import com.dvil.tracio.service.RouteDetailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,51 +18,64 @@ import java.util.stream.Collectors;
 @Service
 public class RouteDetailServiceImpl implements RouteDetailService {
     private final RouteDetailRepo routeDetailRepo;
-    private final UserRepo userRepo;
+    private final RouteRepo routeRepo;
     private final RouteDetailMapper routeDetailMapper = RouteDetailMapper.INSTANCE;
 
-    public RouteDetailServiceImpl(RouteDetailRepo routeDetailRepo, UserRepo userRepo) {
+    public RouteDetailServiceImpl(RouteDetailRepo routeDetailRepo, RouteRepo routeRepo) {
         this.routeDetailRepo = routeDetailRepo;
-        this.userRepo = userRepo;
+        this.routeRepo = routeRepo;
     }
 
     @Override
     public List<RouteDetailDTO> getAllRouteDetails() {
-        return routeDetailRepo.findAll().stream()
+        List<RouteDetailDTO> routeDetails = routeDetailRepo.findAll().stream()
                 .map(routeDetailMapper::toDTO)
                 .collect(Collectors.toList());
+
+        if (routeDetails.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có chi tiết lộ trình nào trong hệ thống");
+        }
+        return routeDetails;
+    }
+
+    @Override
+    public List<RouteDetailDTO> getRouteDetailsByRouteId(Integer routeId) {
+        List<RouteDetailDTO> routeDetails = routeDetailRepo.findByRouteId(routeId).stream()
+                .map(routeDetailMapper::toDTO)
+                .collect(Collectors.toList());
+
+        if (routeDetails.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có chi tiết nào cho lộ trình với ID " + routeId);
+        }
+        return routeDetails;
     }
 
     @Override
     public RouteDetailDTO getRouteDetailById(Integer id) {
         RouteDetail routeDetail = routeDetailRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RouteDetail không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chi tiết lộ trình với ID " + id + " không tồn tại"));
+
         return routeDetailMapper.toDTO(routeDetail);
     }
 
     @Override
     @Transactional
-    public RouteDetailDTO createRouteDetail(RouteDetailDTO routeDetailDTO, Integer userId) {
-        User user = getUserById(userId);
-
-        if (user.getUserRole() != RoleName.CYCLIST && user.getUserRole() != RoleName.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền tạo RouteDetail");
-        }
+    public RouteDetailDTO createRouteDetail(RouteDetailDTO routeDetailDTO) {
+        Route route = routeRepo.findById(routeDetailDTO.getRouteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lộ trình với ID " + routeDetailDTO.getRouteId() + " không tồn tại"));
 
         RouteDetail routeDetail = routeDetailMapper.toEntity(routeDetailDTO);
-        return routeDetailMapper.toDTO(routeDetailRepo.save(routeDetail));
+        routeDetail.setRoute(route);
+        routeDetail = routeDetailRepo.save(routeDetail);
+
+        return routeDetailMapper.toDTO(routeDetail);
     }
 
     @Override
     @Transactional
-    public RouteDetailDTO updateRouteDetail(Integer id, RouteDetailDTO routeDetailDTO, Integer userId) {
-        User user = getUserById(userId);
+    public RouteDetailDTO updateRouteDetail(Integer id, RouteDetailDTO routeDetailDTO) {
         RouteDetail existingRouteDetail = routeDetailRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RouteDetail không tồn tại"));
-
-        if (user.getUserRole() != RoleName.CYCLIST && user.getUserRole() != RoleName.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật RouteDetail");
-        }
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chi tiết lộ trình với ID " + id + " không tồn tại"));
 
         existingRouteDetail.setPathData(routeDetailDTO.getPathData());
 
@@ -72,18 +84,10 @@ public class RouteDetailServiceImpl implements RouteDetailService {
 
     @Override
     @Transactional
-    public void deleteRouteDetail(Integer id, Integer userId) {
-        User user = getUserById(userId);
+    public void deleteRouteDetail(Integer id) {
+        RouteDetail routeDetail = routeDetailRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chi tiết lộ trình với ID " + id + " không tồn tại"));
 
-        if (user.getUserRole() != RoleName.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa RouteDetail");
-        }
-
-        routeDetailRepo.deleteById(id);
-    }
-
-    private User getUserById(Integer userId) {
-        return userRepo.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+        routeDetailRepo.delete(routeDetail);
     }
 }

@@ -1,10 +1,8 @@
 package com.dvil.tracio.configuration;
 
 import com.dvil.tracio.entity.User;
-import com.dvil.tracio.entity.UserRole;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.repository.UserRepo;
-import com.dvil.tracio.repository.UserRoleRepo;
 import com.dvil.tracio.service.EmailService;
 import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
@@ -30,10 +28,6 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     private JwtService jwtService;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private AuthenValidation authenValidation;
-    @Autowired
-    private UserRoleRepo userRoleRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -57,29 +51,34 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         } else {
             User user = new User();
             user.setEmail(email);
-            //user.setFirstName(firstName);
-            //user.setLastName(lastName);
-            user.setUsername(email); // Or any other unique username logic
-            // Gán role mặc định là CYCLIST
-            UserRole userRole = new UserRole(user, RoleName.CYCLIST);
-            userRoleRepository.save(userRole);
+            user.setUsername(email); // Hoặc có thể sử dụng logic tạo username khác
+            user.setRole(RoleName.CYCLIST); // Gán role mặc định là CYCLIST
             user.setUserPassword(encoder.encode("12345"));
             user.setPhone("123456789");
-            //user.setAddress(null);
+
+            // Tạo JWT Token
             accessToken = jwtService.generateAccessToken(user);
             refreshToken = jwtService.generateRefreshToken(user);
             user.setAccessToken(accessToken);
             user.setRefToken(refreshToken);
+
+            // Gửi email xác thực
             String verifyCode = generateVerificationCode();
             emailService.sendVerifyCode(user, verifyCode, "Xác thực tài khoản", "Mã xác thực của bạn là: ");
+
+            // Lưu user vào DB
             userRepository.save(user);
+
+            // Trả về response JSON
             response.setContentType("application/json");
             response.getWriter().write("{\"accessToken\":\"" + accessToken + "\", \"refreshToken\":\"" + refreshToken + "\"}");
             response.getWriter().flush();
+
             this.setAlwaysUseDefaultTargetUrl(true);
             this.setDefaultTargetUrl("http://localhost:5173");
             super.onAuthenticationSuccess(request, response, authentication);
         }
+
     }
 
     private String generateVerificationCode() {

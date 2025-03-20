@@ -14,6 +14,6 @@ public record UserDTO(
         String phone,
         Instant createdAt,
         UserVerifyStatus accountStatus,
-        List<RoleName> roles // Đổi từ RoleName thành List<RoleName>
+        RoleName role // Đổi từ RoleName thành List<RoleName>
 ) {
 }

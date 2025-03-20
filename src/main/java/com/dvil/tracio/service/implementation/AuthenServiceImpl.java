@@ -2,14 +2,12 @@ package com.dvil.tracio.service.implementation;
 
 import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
-import com.dvil.tracio.entity.UserRole;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.enums.UserVerifyStatus;
 import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
-import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.AuthenticationService;
 import com.dvil.tracio.service.EmailService;
@@ -22,7 +20,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -62,20 +59,6 @@ public class AuthenServiceImpl implements AuthenticationService {
     public RegisterResponse Register(RegisterRequest request) {
         verifyUserRequest.ValidRegister(request);
 
-        // Lấy danh sách role hoặc mặc định CYCLIST
-        List<UserRole> userRoles = new ArrayList<>();
-        if (request.getRoles() == null || request.getRoles().isEmpty()) {
-            userRoles.add(new UserRole(null, RoleName.CYCLIST)); // Role mặc định
-        } else {
-            for (RoleName role : request.getRoles()) {
-                if (isAllowedRole(role)) {
-                    userRoles.add(new UserRole(null, role));
-                } else {
-                    throw new IllegalArgumentException("Role không hợp lệ: " + role);
-                }
-            }
-        }
-
         // Tạo User mới
         User newUser = new User();
         newUser.setEmail(request.getEmail());
@@ -84,13 +67,8 @@ public class AuthenServiceImpl implements AuthenticationService {
         newUser.setPhone(request.getPhone());
         newUser.setCreatedAt(Instant.now());
         newUser.setAccountStatus(UserVerifyStatus.Unverified);
-        newUser.setUserRoles(userRoles);
 
-        // Liên kết UserRole với User
-        for (UserRole userRole : userRoles) {
-            userRole.setUser(newUser);
-        }
-
+        newUser.setRole(request.getRole() == null ? RoleName.CYCLIST : request.getRole());
         // Tạo JWT Token
         String accessToken = jwtService.generateAccessToken(newUser);
         newUser.setAccessToken(accessToken);
@@ -108,6 +86,7 @@ public class AuthenServiceImpl implements AuthenticationService {
         UserDTO userDTO = userMapper.toDTO(newUser);
         return new RegisterResponse("Đăng ký thành công!", userDTO, accessToken, refreshToken);
     }
+
 
     @Override
     public String authenticate(LoginRequest request) throws Exception {
@@ -131,7 +110,4 @@ public class AuthenServiceImpl implements AuthenticationService {
         return String.valueOf(new Random().nextInt(900000) + 100000); // Mã 6 chữ số
     }
 
-    private boolean isAllowedRole(RoleName role) {
-        return role == RoleName.CYCLIST || role == RoleName.SHOP_OWNER;
-    }
 }

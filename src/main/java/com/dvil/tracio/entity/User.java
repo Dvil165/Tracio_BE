@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -50,8 +49,9 @@ public class User implements UserDetails {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<UserRole> userRoles;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private RoleName role;  // Chỉ một role duy nhất
 
     @Column(name = "username", nullable = false)
     private String username;
@@ -67,9 +67,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return userRoles.stream()
-                .map(userRole -> new SimpleGrantedAuthority(userRole.getRole().name()))
-                .collect(Collectors.toList());
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.dvil.tracio.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,10 +21,10 @@ public class RouteDetail {
     @Column(name = "path_data", columnDefinition = "NVARCHAR(MAX)", nullable = false)
     private String pathData; // Lưu JSON hoặc danh sách tọa độ
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "route_id", nullable = false)
+    @JsonIgnore
     private Route route;
 
-}
 
+}

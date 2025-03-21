@@ -3,8 +3,10 @@ package com.dvil.tracio.service.implementation;
 import com.dvil.tracio.dto.RouteDTO;
 import com.dvil.tracio.entity.Route;
 import com.dvil.tracio.entity.User;
+import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.mapper.RouteMapper;
 import com.dvil.tracio.repository.RouteRepo;
+import com.dvil.tracio.repository.RouteDetailRepo;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.service.RouteService;
 import org.springframework.http.HttpStatus;
@@ -20,18 +22,20 @@ import java.util.stream.Collectors;
 @Service
 public class RouteServiceImpl implements RouteService {
     private final RouteRepo routeRepo;
-    private final UserRepo userRepo; // Cần để kiểm tra quyền người dùng
+    private final RouteDetailRepo routeDetailRepo;
+    private final UserRepo userRepo;
     private final RouteMapper routeMapper = RouteMapper.INSTANCE;
 
-    public RouteServiceImpl(RouteRepo routeRepo, UserRepo userRepo) {
+    public RouteServiceImpl(RouteRepo routeRepo, RouteDetailRepo routeDetailRepo, UserRepo userRepo) {
         this.routeRepo = routeRepo;
+        this.routeDetailRepo = routeDetailRepo;
         this.userRepo = userRepo;
     }
 
     @Override
     public List<RouteDTO> getAllRoutes() {
         List<RouteDTO> routes = routeRepo.findAll().stream()
-                .map(routeMapper::toDTO)
+                .map(routeMapper::toDTO) // 🔥 Thay vì `toDTOWithDetails()`
                 .collect(Collectors.toList());
 
         if (routes.isEmpty()) {
@@ -45,21 +49,25 @@ public class RouteServiceImpl implements RouteService {
         Route route = routeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lộ trình với ID " + id + " không tồn tại"));
 
-        return routeMapper.toDTO(route);
+        return routeMapper.toDTO(route); // 🔥 Thay vì `toDTOWithDetails()`
     }
 
     @Override
     @Transactional
     public RouteDTO createRoute(RouteDTO routeDTO) {
         User user = getCurrentUser();
-        if (!userHasRole(user, "ADMIN") && !userHasRole(user, "CYCLIST")) {
+
+        // 🔥 Sửa lại kiểm tra quyền
+        boolean hasPermission = user.getRole().equals(RoleName.ADMIN) || user.getRole().equals(RoleName.CYCLIST);
+
+        if (!hasPermission) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền tạo lộ trình");
         }
 
         Route route = routeMapper.toEntity(routeDTO);
         route.setUsername(user.getUsername());
-        route = routeRepo.save(route);
-        return routeMapper.toDTO(route);
+        final Route savedRoute = routeRepo.save(route);
+        return routeMapper.toDTO(savedRoute);
     }
 
     @Override
@@ -69,8 +77,12 @@ public class RouteServiceImpl implements RouteService {
         Route existingRoute = routeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lộ trình với ID " + id + " không tồn tại"));
 
-        if (!userHasRole(user, "ADMIN") || userHasRole(user, "CYCLIST")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật lộ trình");
+        // 🔥 Kiểm tra quyền
+        boolean isAdmin = user.getRole().equals(RoleName.ADMIN);
+        boolean isOwner = existingRoute.getUsername().equals(user.getUsername());
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật lộ trình này");
         }
 
         existingRoute.setRouteLength(routeDTO.getRouteLength());
@@ -86,8 +98,17 @@ public class RouteServiceImpl implements RouteService {
     @Override
     @Transactional
     public void deleteRoute(Integer id) {
+        User user = getCurrentUser();
         Route route = routeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lộ trình với ID " + id + " không tồn tại"));
+
+        boolean isAdmin = user.getRole().equals(RoleName.ADMIN);
+        boolean isOwner = route.getUsername().equals(user.getUsername());
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xoá lộ trình này");
+        }
+
         routeRepo.delete(route);
     }
 
@@ -99,10 +120,5 @@ public class RouteServiceImpl implements RouteService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không tìm thấy người dùng"));
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không thể xác thực người dùng");
-    }
-
-    private boolean userHasRole(User user, String role) {
-        return user.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_" + role));
     }
 }

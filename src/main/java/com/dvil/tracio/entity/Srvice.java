@@ -1,5 +1,6 @@
 package com.dvil.tracio.entity;
 
+import com.dvil.tracio.enums.ServiceType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,13 +17,14 @@ public class Srvice {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime createdAt;
 
     @Column(name = "serv_description")
     private String servDescription;
 
-    @Column(name = "serv_name", nullable = false, length = 100)
-    private String servName;
+    @Column(name = "serv_name", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private ServiceType servName;
 
 }

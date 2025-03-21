@@ -58,7 +58,7 @@ public class SrviceServiceImpl implements SrviceService {
         Srvice existingSrvice = srviceRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dịch vụ với ID " + id + " không tồn tại"));
 
-        existingSrvice.setServName(srviceDTO.getServName());
+        existingSrvice.setServName(srviceDTO.getServType());
         existingSrvice.setServDescription(srviceDTO.getServDescription());
 
         return srviceMapper.toDTO(srviceRepo.save(existingSrvice));

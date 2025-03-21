@@ -1,15 +1,18 @@
 package com.dvil.tracio.dto;
 
-import lombok.Data;
+import com.dvil.tracio.enums.ProductType;
 import java.time.OffsetDateTime;
+import java.util.List;
 
-@Data
-public class ProductDTO {
-    private Integer id;
-    private String productName;
-    private String description;
-    private Double price;
-    private String type;
-    private OffsetDateTime createdAt;
-    private Integer shopId;
+public record ProductDTO (
+     Integer id,
+     String productName,
+     String description,
+     Double price,
+     ProductType type,
+     OffsetDateTime createdAt,
+     Integer shopId,
+     List<String> imageUrls
+    ){
+
 }

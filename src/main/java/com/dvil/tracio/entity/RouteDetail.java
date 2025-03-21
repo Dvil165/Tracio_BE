@@ -26,5 +26,4 @@ public class RouteDetail {
     @JsonIgnore
     private Route route;
 
-
 }

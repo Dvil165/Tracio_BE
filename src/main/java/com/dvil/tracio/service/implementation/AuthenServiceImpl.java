@@ -8,6 +8,7 @@ import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
+import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.AuthenticationService;
 import com.dvil.tracio.service.EmailService;
@@ -85,7 +86,7 @@ public class AuthenServiceImpl implements AuthenticationService {
 
 
     @Override
-    public String authenticate(LoginRequest request) throws Exception {
+    public LoginResponse authenticate(LoginRequest request) throws Exception {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu"));
 
@@ -93,12 +94,11 @@ public class AuthenServiceImpl implements AuthenticationService {
             Authentication auth = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             if (auth.isAuthenticated()) {
-                return jwtService.generateAccessToken(user);
+                return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken(), user.getRefToken());
             }
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu");
         }
-
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Xác thực thất bại");
     }
 

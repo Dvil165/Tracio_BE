@@ -54,7 +54,6 @@ public class Security {
         this.userDetailsService = userDetailsService;
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
@@ -101,11 +100,10 @@ public class Security {
                 .build();
     }
 
-
     @Bean
     CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:5173"));
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
@@ -132,4 +130,3 @@ public class Security {
     }
 
 }
-

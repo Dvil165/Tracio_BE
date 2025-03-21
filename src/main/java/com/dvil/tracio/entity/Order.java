@@ -19,7 +19,7 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "order_date", nullable = false)
+    @Column(name = "order_date", nullable = false, columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime orderDate;
 
     @Column(name = "status", nullable = false, length = 50)

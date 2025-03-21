@@ -29,10 +29,10 @@ public class GroupRide {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "start_time", nullable = false, columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime startTime;
 
-    @Column(name = "finish_time")
+    @Column(name = "finish_time", columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime finishTime;
 
     @Column(name = "start_point", nullable = false)

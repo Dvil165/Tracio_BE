@@ -39,13 +39,30 @@ public class ProductController {
         }
     }
 
+//    @PostMapping
+//    public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
+//        try {
+//            ProductDTO createdProduct = productService.createProduct(productDTO);
+//            return ResponseEntity.ok(Map.of("message", "Sản phẩm đã được tạo thành công!", "product", createdProduct));
+//        } catch (ResponseStatusException ex) {
+//            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
+//        }
+//    }
+
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
         try {
             ProductDTO createdProduct = productService.createProduct(productDTO);
-            return ResponseEntity.ok(Map.of("message", "Sản phẩm đã được tạo thành công!", "product", createdProduct));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Sản phẩm đã được tạo thành công!",
+                    "product", createdProduct
+            ));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("error", ex.getReason())); // Sử dụng "error" thay vì "message" để phân biệt lỗi
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Đã xảy ra lỗi không xác định!"));
         }
     }
 

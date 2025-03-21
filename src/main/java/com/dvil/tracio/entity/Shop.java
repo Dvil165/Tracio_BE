@@ -19,7 +19,7 @@ public class Shop {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime createdAt;
 
     @Column(name = "open_hours")

@@ -2,17 +2,35 @@ package com.dvil.tracio.mapper;
 
 import com.dvil.tracio.dto.ProductDTO;
 import com.dvil.tracio.entity.Product;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import com.dvil.tracio.entity.ProductImage;
+import org.springframework.stereotype.Service;
+import java.util.function.Function;
 
-@Mapper
-public interface ProductMapper {
-    ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
+@Service
+public class ProductMapper implements Function<Product, ProductDTO> {
+    @Override
+    public ProductDTO apply(Product product) {
+        return new ProductDTO(
+                product.getId(),
+                product.getProductName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getProductType(),
+                product.getCreatedAt(),
+                product.getShop().getId(),
+                product.getProductImages().stream()
+                        .map(ProductImage::getImageUrl)
+                        .toList()
 
-    @Mapping(source = "shop.id", target = "shopId")
-    ProductDTO toDTO(Product product);
+        );
+    }
 
-    @Mapping(source = "shopId", target = "shop.id")
-    Product toEntity(ProductDTO productDTO);
+    public Product toEntity(ProductDTO productDTO) {
+        Product product = new Product();
+        product.setProductName(productDTO.productName());
+        product.setDescription(productDTO.description());
+        product.setPrice(productDTO.price());
+        product.setProductType(productDTO.type()); // Enum
+        return product;
+    }
 }

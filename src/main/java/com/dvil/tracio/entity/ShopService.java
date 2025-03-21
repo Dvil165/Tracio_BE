@@ -18,7 +18,7 @@ public class ShopService {
     @Column(name = "shop_service_id", nullable = false)
     private Integer id;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

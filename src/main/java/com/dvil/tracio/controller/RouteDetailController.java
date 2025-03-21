@@ -4,11 +4,9 @@ import com.dvil.tracio.dto.RouteDetailDTO;
 import com.dvil.tracio.service.RouteDetailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/route-details")
@@ -19,63 +17,33 @@ public class RouteDetailController {
         this.routeDetailService = routeDetailService;
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllRouteDetails() {
-        try {
-            List<RouteDetailDTO> routeDetails = routeDetailService.getAllRouteDetails();
-            return ResponseEntity.ok(routeDetails);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+    @PostMapping
+    public ResponseEntity<?> addRouteDetail(@RequestBody RouteDetailDTO routeDetailDTO) {
+        RouteDetailDTO createdRouteDetail = routeDetailService.addRouteDetail(routeDetailDTO);
+        return ResponseEntity.ok(Map.of("message", "RouteDetail đã được thêm thành công!", "routeDetail", createdRouteDetail));
     }
 
     @GetMapping("/route/{routeId}")
     public ResponseEntity<?> getRouteDetailsByRouteId(@PathVariable Integer routeId) {
-        try {
-            List<RouteDetailDTO> routeDetails = routeDetailService.getRouteDetailsByRouteId(routeId);
-            return ResponseEntity.ok(routeDetails);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+        List<RouteDetailDTO> details = routeDetailService.getRouteDetailsByRouteId(routeId);
+        return ResponseEntity.ok(details);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getRouteDetailById(@PathVariable Integer id) {
-        try {
-            RouteDetailDTO routeDetail = routeDetailService.getRouteDetailById(id);
-            return ResponseEntity.ok(routeDetail);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createRouteDetail(@RequestBody RouteDetailDTO routeDetailDTO) {
-        try {
-            RouteDetailDTO createdRouteDetail = routeDetailService.createRouteDetail(routeDetailDTO);
-            return ResponseEntity.ok(Map.of("message", "Chi tiết lộ trình đã được tạo thành công!", "routeDetail", createdRouteDetail));
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+        RouteDetailDTO detail = routeDetailService.getRouteDetailById(id);
+        return ResponseEntity.ok(detail);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateRouteDetail(@PathVariable Integer id, @RequestBody RouteDetailDTO routeDetailDTO) {
-        try {
-            RouteDetailDTO updatedRouteDetail = routeDetailService.updateRouteDetail(id, routeDetailDTO);
-            return ResponseEntity.ok(Map.of("message", "Cập nhật chi tiết lộ trình thành công!", "routeDetail", updatedRouteDetail));
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+        RouteDetailDTO updatedDetail = routeDetailService.updateRouteDetail(id, routeDetailDTO);
+        return ResponseEntity.ok(Map.of("message", "RouteDetail đã được cập nhật!", "routeDetail", updatedDetail));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteRouteDetail(@PathVariable Integer id) {
-        try {
-            routeDetailService.deleteRouteDetail(id);
-            return ResponseEntity.ok(Map.of("message", "Chi tiết lộ trình với ID " + id + " đã bị xóa thành công!"));
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+        routeDetailService.deleteRouteDetail(id);
+        return ResponseEntity.ok(Map.of("message", "RouteDetail với ID " + id + " đã bị xóa thành công!"));
     }
 }

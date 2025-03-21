@@ -1,10 +1,10 @@
 package com.dvil.tracio.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import java.util.List;
 
 @Getter
 @Setter
@@ -37,4 +37,7 @@ public class Route {
     @Column(name = "location")
     private String location;
 
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("route") // Tránh vòng lặp vô hạn khi trả JSON
+    private List<RouteDetail> routeDetails;
 }

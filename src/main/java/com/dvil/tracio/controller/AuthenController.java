@@ -4,6 +4,7 @@ import com.dvil.tracio.entity.User;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
+import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.implementation.AuthenServiceImpl;
 import com.dvil.tracio.util.JwtService;
@@ -40,7 +41,7 @@ public class AuthenController {
 
 
     @PostMapping({"/login"})
-    public String login(@RequestBody LoginRequest request) throws Exception {
+    public LoginResponse login(@RequestBody LoginRequest request) throws Exception {
         System.out.println(request.getUsername());
         User user = userRepo.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

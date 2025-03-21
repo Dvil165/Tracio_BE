@@ -7,5 +7,5 @@ import com.dvil.tracio.response.RegisterResponse;
 
 public interface AuthenticationService {
     RegisterResponse Register(RegisterRequest request) throws Exception;
-    String authenticate(LoginRequest request) throws Exception;
+    LoginResponse authenticate(LoginRequest request) throws Exception;
 }

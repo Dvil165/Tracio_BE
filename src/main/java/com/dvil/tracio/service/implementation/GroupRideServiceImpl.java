@@ -132,8 +132,15 @@ public class GroupRideServiceImpl implements GroupRideService {
     @Override
     @Transactional
     public void deleteGroupRide(Integer id) {
+        User user = getCurrentUser();
         GroupRide groupRide = groupRideRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy GroupRide với ID " + id));
+        boolean isAdmin = user.getRole().equals(RoleName.ADMIN);
+        boolean isOwner = groupRide.getCreatedBy().getId().equals(user.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xoá GroupRide này");
+        }
         groupRideRepo.delete(groupRide);
     }
 

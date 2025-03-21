@@ -4,8 +4,10 @@ import com.dvil.tracio.entity.User;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
+import com.dvil.tracio.request.ResetPasswordRequest;
 import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
+import com.dvil.tracio.response.ResetPasswordResponse;
 import com.dvil.tracio.service.implementation.AuthenServiceImpl;
 import com.dvil.tracio.util.JwtService;
 import org.springframework.http.HttpStatus;
@@ -64,6 +66,11 @@ public class AuthenController {
         Map<String, String> response = new HashMap<>();
         response.put("accessToken", newAccessToken);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/passwordReset")
+    public ResetPasswordResponse passwordReset(@RequestBody ResetPasswordRequest request) throws Exception {
+        return authenService.ResetPassword(request);
     }
 
 

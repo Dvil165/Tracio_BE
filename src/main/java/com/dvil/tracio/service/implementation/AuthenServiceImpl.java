@@ -8,8 +8,10 @@ import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.LoginRequest;
 import com.dvil.tracio.request.RegisterRequest;
+import com.dvil.tracio.request.ResetPasswordRequest;
 import com.dvil.tracio.response.LoginResponse;
 import com.dvil.tracio.response.RegisterResponse;
+import com.dvil.tracio.response.ResetPasswordResponse;
 import com.dvil.tracio.service.AuthenticationService;
 import com.dvil.tracio.service.EmailService;
 import com.dvil.tracio.util.AuthenValidation;
@@ -21,10 +23,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Random;
 
 
@@ -33,7 +37,7 @@ public class AuthenServiceImpl implements AuthenticationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenServiceImpl.class);
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     private final UserRepo userRepository;
     private final AuthenValidation verifyUserRequest;
@@ -86,20 +90,48 @@ public class AuthenServiceImpl implements AuthenticationService {
 
 
     @Override
-    public LoginResponse authenticate(LoginRequest request) throws Exception {
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu"));
-
+    public LoginResponse authenticate(LoginRequest request)
+            throws BadCredentialsException, ResponseStatusException {
         try {
             Authentication auth = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-            if (auth.isAuthenticated()) {
-                return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken(), user.getRefToken());
+            Optional<User> optionalUser  = userRepository.findByUsername(request.getUsername());
+            if (optionalUser.isEmpty()) {
+                throw new UsernameNotFoundException("User not found");
             }
+            User user = optionalUser.get();
+            if (jwtService.isTokenExpired(user.getAccessToken())) {
+                if (!jwtService.isTokenExpired(user.getRefToken())) {
+                    // Chỉ tạo mới Access Token từ Refresh Token
+                    String newAccessToken = jwtService.generateAccessToken(user);
+                    user.setAccessToken(newAccessToken);
+                    userRepository.save(user);
+                } else {
+                    // Cả hai token hết hạn -> tạo mới cả Access & Refresh Token
+                    String newAccessToken = jwtService.generateAccessToken(user);
+                    String newRefreshToken = jwtService.generateRefreshToken(user);
+                    user.setAccessToken(newAccessToken);
+                    user.setRefToken(newRefreshToken);
+                    userRepository.save(user);
+                }
+            }
+            return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken(), user.getRefToken());
         } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai tên đăng nhập hoặc mật khẩu");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sai tên đăng nhập hoặc mật khẩu");
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Xác thực thất bại");
+    }
+
+    @Override
+    public ResetPasswordResponse ResetPassword(ResetPasswordRequest request) throws Exception {
+        try {
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            emailService.sendVerifyCode(user, generateVerificationCode()
+                    , "Reset password: ", "Mã xác thực của bạn là: ");
+            return new ResetPasswordResponse("Sent");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi trong quá trình gửi email", e);
+        }
     }
 
     private String generateVerificationCode() {

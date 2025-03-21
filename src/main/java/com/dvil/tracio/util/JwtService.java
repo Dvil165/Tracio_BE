@@ -3,6 +3,7 @@ package com.dvil.tracio.util;
 
 import com.dvil.tracio.enums.TokenType;
 import com.dvil.tracio.entity.User;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.Encoders;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,8 +55,12 @@ public class JwtService {
     }
 
     public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Date expirationDate = extractExpiration(token);
+        System.out.println("Token expires at: " + expirationDate);
+        System.out.println("Current time: " + new Date());
+        return expirationDate.before(new Date());
     }
+
 
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         final Claims claims = extractAllClaims(token);
@@ -67,18 +72,21 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parser()
-                .verifyWith(getSigninKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts
+                    .parser()
+                    .verifyWith(getSigninKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();  // Vẫn lấy được Claims ngay cả khi token hết hạn
+        }
     }
 
     public String generateToken(User user,
                                 long expirationMillis, String TOKEN_TYPE) {
         Map<String, Object> claims = new HashMap<>();
-
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -95,7 +103,6 @@ public class JwtService {
         byte[] keyByte = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyByte);
     }
-
 
     public String generateEmailVerifyToken(User user) {
         return generateToken(user, accessTokenExpiration, TokenType.EmailVerificationToken.name());

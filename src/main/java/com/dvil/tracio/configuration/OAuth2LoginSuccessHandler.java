@@ -4,7 +4,6 @@ import com.dvil.tracio.entity.User;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.service.EmailService;
-import com.dvil.tracio.util.AuthenValidation;
 import com.dvil.tracio.util.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

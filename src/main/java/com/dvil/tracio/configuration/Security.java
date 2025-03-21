@@ -54,7 +54,6 @@ public class Security {
         this.userDetailsService = userDetailsService;
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
@@ -101,7 +100,6 @@ public class Security {
                 .build();
     }
 
-
     @Bean
     CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -132,4 +130,3 @@ public class Security {
     }
 
 }
-

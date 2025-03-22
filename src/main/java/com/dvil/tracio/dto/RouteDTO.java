@@ -7,6 +7,7 @@ import java.util.List;
 public class RouteDTO {
     private Integer id;
     private String username;
+    private Integer userId;
     private Double routeLength;
     private Double estimatedTime;
     private String difficulty;

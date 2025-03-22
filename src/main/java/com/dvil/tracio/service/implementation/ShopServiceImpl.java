@@ -29,11 +29,10 @@ public class ShopServiceImpl implements ShopService {
 
 
 //    @Override
-//    public String createShop(ShopDTO shopDTO, Integer ownerId) {
+//    public String createShop(ShopDTO shopDTO) {
+//        Shop shop = shopMapper.toEntity(shopDTO);
 //        User owner = userRepo.findById(ownerId)
 //                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
-//
-//        Shop shop = shopMapper.toEntity(shopDTO);
 //        if (!(owner.getUserRole() == RoleName.SHOP_OWNER)) {
 //            return "fail";
 //        }
@@ -47,23 +46,28 @@ public class ShopServiceImpl implements ShopService {
 //    }
 
     @Override
+    public String createShop(ShopDTO shopDTO, Integer ownerId) {
+        return "";
+    }
+
+    @Override
     public ShopDTO getShopById(Integer id) {
         Shop shop = shopRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cửa hàng với ID " + id + " không tồn tại"));
-        return shopMapper.toDTO(shop);
+        return shopMapper.apply(shop);
     }
 
     @Override
     public List<ShopDTO> getAllShops() {
         return shopRepo.findAll().stream()
-                .map(shopMapper::toDTO)
+                .map(shopMapper::apply)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ShopDTO> getShopsByOwnerId(Integer ownerId) {
         return shopRepo.findByOwnerId(ownerId).stream()
-                .map(shopMapper::toDTO)
+                .map(shopMapper::apply)
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +82,7 @@ public class ShopServiceImpl implements ShopService {
         shop.setShpDescription(shopDTO.shpDescription());
 
         shop = shopRepo.save(shop);
-        return shopMapper.toDTO(shop);
+        return shopMapper.apply(shop);
     }
 
     @Override

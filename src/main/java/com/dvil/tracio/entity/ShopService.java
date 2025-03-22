@@ -30,5 +30,4 @@ public class ShopService {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
-
 }

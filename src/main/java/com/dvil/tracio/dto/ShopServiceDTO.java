@@ -1,6 +1,7 @@
 package com.dvil.tracio.dto;
 
 import lombok.Data;
+
 import java.time.OffsetDateTime;
 
 @Data

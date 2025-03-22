@@ -25,27 +25,27 @@ public class ShopServiceController {
             List<ShopServiceDTO> shopServices = shopServiceService.getAllShopServices();
             return ResponseEntity.ok(shopServices);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
         }
     }
 
-    @PostMapping
-    public ResponseEntity<?> createShopService(@RequestBody ShopServiceDTO shopServiceDTO) {
-        try {
-            ShopServiceDTO createdShopService = shopServiceService.createShopService(shopServiceDTO);
-            return ResponseEntity.ok(Map.of("message", "Dịch vụ của cửa hàng đã được tạo thành công!", "shopService", createdShopService));
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
-    }
+//    @PostMapping("/{serviceId}")
+//    public ResponseEntity<?> createShopService(@PathVariable Integer serviceId) {
+//        try {
+//            ShopServiceDTO created = shopServiceService.createShopService(serviceId);
+//            return ResponseEntity.ok(Map.of("message", "Tạo dịch vụ thành công", "shopService", created));
+//        } catch (ResponseStatusException ex) {
+//            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+//        }
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteShopService(@PathVariable Integer id) {
         try {
             shopServiceService.deleteShopService(id);
-            return ResponseEntity.ok(Map.of("message", "Dịch vụ của cửa hàng với ID " + id + " đã bị xóa thành công!"));
+            return ResponseEntity.ok(Map.of("message", "Xoá dịch vụ của shop thành công!"));
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
         }
     }
 }

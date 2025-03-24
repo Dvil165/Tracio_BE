@@ -101,6 +101,8 @@ public class AdminServiceImpl implements AdminService {
     public String rejectShopRequest(Integer requestId, User admin) {
         ShopRequest request = shopRequestRepo.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+        User user = userRepository.findById(request.getUser().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         if (request.getStatus() != RequestStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Request already processed");
         }
@@ -108,7 +110,20 @@ public class AdminServiceImpl implements AdminService {
         request.setProcessedBy(admin);
         request.setResponseTime(Instant.now());
         shopRequestRepo.save(request);
-        return "Shop request rejected";
+        // 4️⃣ Gửi email thông báo tài khoản mới
+        String emailContent = String.format("""
+        Chào %s,
+
+        Yêu cầu mở shop "%s" của bạn đã bị từ chối!
+        
+        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!
+        """,
+                request.getUser().getUsername(),
+                request.getShopName()
+        );
+
+        emailService.sendEmail(user.getEmail(), "Shop Rejected - Account Details", emailContent);
+        return "Shop request approved! Account details sent via email.";
     }
 
     @Override

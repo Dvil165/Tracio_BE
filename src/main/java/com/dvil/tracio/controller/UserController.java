@@ -28,8 +28,4 @@ public class UserController {
         userService.deleteUserById(id);
         return ResponseEntity.ok("User with ID " + id + " has been deleted successfully.");
     }
-
-
-
-
 }

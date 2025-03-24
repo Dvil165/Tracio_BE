@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.util.Optional;
@@ -122,6 +123,7 @@ public class AuthenServiceImpl implements AuthenticationService {
     }
 
     @Override
+    @Transactional
     public ResetPasswordResponse ResetPassword(ResetPasswordRequest request) throws Exception {
         try {
             User user = userRepository.findByEmail(request.getEmail())

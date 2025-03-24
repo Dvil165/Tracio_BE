@@ -27,4 +27,16 @@ public class EmailService {
         }
     }
 
+    public void sendEmail(String to, String subject, String content) {
+        try {
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(to);
+            email.setSubject(subject);
+            email.setText(content);
+            EmailSender.send(email);
+        } catch (Exception e) {
+            logger.error("Error while sending email: ", e);
+        }
+    }
+
 }

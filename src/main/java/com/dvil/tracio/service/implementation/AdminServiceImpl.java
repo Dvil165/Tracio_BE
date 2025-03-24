@@ -27,7 +27,6 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -114,57 +113,45 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public String approveShopRequest(Integer requestId, User adminName) {
+    public String approveShopRequest(Integer requestId, User admin) {
         ShopRequest request = shopRequestRepo.findById(requestId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Shop request not found"));
-
+        User user = userRepository.findById(request.getUser().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         if (request.getStatus() != RequestStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request is already processed.");
         }
-        // Tạo tài khoản mới cho shop
-        User shopOwner = new User();
-        shopOwner.setUsername(request.getUser().getUsername() + "_shop"); // Tạo username mới
-//        shopOwner.setEmail(request.getUser().getEmail());
-//        shopOwner.setUserPassword(encoder.encode(generateRandomPassword())); // Mật khẩu random
-//        shopOwner.setRole(RoleName.SHOP_OWNER);
-//        userRepository.save(shopOwner);
-//
-//        // 2️⃣ Tạo entity `Shop` từ request
-//        Shop shop = new Shop();
-//        shop.setShpName(request.getShopName());
-//        shop.setShpDescription(request.getDescription());
-//        shop.setShpLocation(request.getUser().getAddress());
-//        shop.setOpenHours(request.getOpen_hours());
-//        shop.setOwner(shopOwner);
-//        shopRepo.save(shop);
-//
-//        // 3️⃣ Cập nhật trạng thái request
-//        request.setStatus(RequestStatus.APPROVED);
-//        request.setResponseTime(Instant.now());
-//        request.setProcessedBy(admin); // Gán admin duyệt request
-//        shopRequestRepo.save(request);
-//
-//        // 4️⃣ Gửi email thông báo tài khoản mới
-//        String emailContent = String.format("""
-//        Chào %s,
-//
-//        Yêu cầu mở shop "%s" của bạn đã được chấp nhận!
-//        Dưới đây là thông tin tài khoản mới của bạn:
-//
-//        🌟 Username: %s
-//        🔒 Password: %s
-//
-//        Vui lòng đăng nhập và đổi mật khẩu ngay lập tức.
-//
-//        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!
-//        """,
-//                request.getUser().getUsername(),
-//                request.getShopName(),
-//                shopOwner.getUsername(),
-//                "your_generated_password_here"
-//        );
-//
-//        emailService.sendEmail(shopOwner.getEmail(), "Shop Approved - Account Details", emailContent);
+
+        // 2️⃣ Tạo entity `Shop` từ request
+        Shop shop = new Shop();
+        shop.setShpName(request.getShopName());
+        shop.setShpDescription(request.getDescription());
+        shop.setShpLocation(request.getShop_location());
+        shop.setOpenHours(request.getOpen_hours());
+        user.setRole(RoleName.SHOP_OWNER);
+        userRepository.save(user);
+        shop.setOwner(user);
+        shopRepository.save(shop);
+
+        // 3️⃣ Cập nhật trạng thái request
+        request.setStatus(RequestStatus.APPROVED);
+        request.setResponseTime(Instant.now());
+        request.setProcessedBy(admin); // Gán admin duyệt request
+        shopRequestRepo.save(request);
+
+        // 4️⃣ Gửi email thông báo tài khoản mới
+        String emailContent = String.format("""
+        Chào %s,
+
+        Yêu cầu mở shop "%s" của bạn đã được chấp nhận!
+        
+        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!
+        """,
+                request.getUser().getUsername(),
+                request.getShopName()
+        );
+
+        emailService.sendEmail(user.getEmail(), "Shop Approved - Account Details", emailContent);
         return "Shop request approved! Account details sent via email.";
     }
 

@@ -37,6 +37,10 @@ public class Route {
     @Column(name = "location")
     private String location;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("route") // Tránh vòng lặp vô hạn khi trả JSON
     private List<RouteDetail> routeDetails;

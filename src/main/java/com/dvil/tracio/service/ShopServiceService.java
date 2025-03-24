@@ -1,6 +1,7 @@
 package com.dvil.tracio.service;
 
 import com.dvil.tracio.dto.ShopServiceDTO;
+
 import java.util.List;
 
 public interface ShopServiceService {
@@ -8,6 +9,6 @@ public interface ShopServiceService {
     List<ShopServiceDTO> getShopServicesByShopId(Integer shopId);
     List<ShopServiceDTO> getShopServicesByServiceId(Integer serviceId);
     ShopServiceDTO getShopServiceById(Integer id);
-    ShopServiceDTO createShopService(ShopServiceDTO shopServiceDTO);
+//    ShopServiceDTO createShopService(Integer serviceId);
     void deleteShopService(Integer id);
 }

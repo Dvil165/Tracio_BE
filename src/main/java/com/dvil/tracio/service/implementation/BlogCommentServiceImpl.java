@@ -52,11 +52,6 @@ public class BlogCommentServiceImpl implements BlogCommentService {
     public BlogCommentDTO createComment(Integer blogId, BlogCommentDTO commentDTO) {
         User user = getCurrentUser();
 
-        // ✅ CHỈ `CYCLIST` & `ADMIN` ĐƯỢC TẠO COMMENT
-        if (!(user.getRole().equals(RoleName.ADMIN) || user.getRole().equals(RoleName.CYCLIST))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền comment.");
-        }
-
         Blog blog = blogRepo.findById(blogId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blog không tồn tại"));
 

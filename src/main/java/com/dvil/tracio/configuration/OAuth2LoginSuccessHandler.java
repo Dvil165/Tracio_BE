@@ -37,10 +37,11 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         String accessToken = "";
         String refreshToken = "";
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User User = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         //authenValidation.ValidRegister(request);
 
-        if (optionalUser.isPresent()) {
+        if (User != null) {
             // Nếu email đã được sử dụng, trả về lỗi 400
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");

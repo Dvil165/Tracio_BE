@@ -41,7 +41,7 @@ public class ShopRequestServiceImpl implements ShopRequestService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Your request is being processed.");
         }
         Shop shop = shopMapper.toEntity(request.getShop(), owner);
-        if (shopRequestRepo.existsByShopName(shop.getShpName()) || shopRepo.existsByShopName(shop.getShpName())) {
+        if (shopRequestRepo.existsByShopName(shop.getShpName()) || shopRepo.existsByShpName(shop.getShpName())) {
             return new CreateShopResponse("Shop name is already taken");
         }
         ShopRequest shopRequest = new ShopRequest();

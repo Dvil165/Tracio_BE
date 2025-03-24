@@ -116,7 +116,8 @@ public class AuthenServiceImpl implements AuthenticationService {
                     userRepository.save(user);
                 }
             }
-            return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken(), user.getRefToken());
+            return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken()
+                                   , user.getRefToken(), user.getRole());
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sai tên đăng nhập hoặc mật khẩu");
         }

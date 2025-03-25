@@ -4,4 +4,5 @@ public enum RoleName {
     ADMIN,
     CYCLIST,
     SHOP_OWNER,
+    STAFF
 }

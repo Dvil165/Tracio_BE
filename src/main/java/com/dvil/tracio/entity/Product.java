@@ -50,12 +50,20 @@ public class Product {
 
     // tao ra bao hanh tu dong dua theo loai san pham
 
-//    public void setWarrantyPeriod(Integer months) {
-//        if ("sale".equalsIgnoreCase()) { // Chỉ áp dụng bảo hành cho sản phẩm bán
-//            this.warranty.setWarrantyPeriod(OffsetDateTime.now().plusMonths(months));
-//        } else {
-//            this.warranty = null; // Không có bảo hành nếu là sản phẩm thuê
-//        }
-//    }
+    public void setWarrantyPeriod(ProductType productType) {
+        if (productType == ProductType.RENTAL) { // Sản phẩm thuê không có bảo hành
+            this.warranty = null;
+            return;
+        }
+
+        int defaultMonths = switch (productType) {
+            case BIKE -> 12;
+            case ACCESSORY -> 6;
+            case PROTECTION -> 9;
+            default -> 0;
+        };
+        this.warranty.setWarrantyPeriod(OffsetDateTime.now().plusMonths(defaultMonths));
+    }
+
 }
 

@@ -1,7 +1,12 @@
 package com.dvil.tracio.controller;
 
 import com.dvil.tracio.dto.ShopDTO;
+import com.dvil.tracio.dto.UserDTO;
+import com.dvil.tracio.entity.User;
+import com.dvil.tracio.request.CreateEmployeeRequest;
+import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.ShopService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -54,5 +59,10 @@ public class ShopController {
     public ResponseEntity<Map<String, Object>> deleteShop(@PathVariable Integer id) {
         String message = shopService.deleteShop(id);
         return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @PostMapping("/{shopId}/employees")
+    public ResponseEntity<RegisterResponse> createEmployee(@PathVariable Integer shopId, @RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.ok(shopService.createEmployee(shopId, request));
     }
 }

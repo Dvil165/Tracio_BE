@@ -15,7 +15,7 @@ public class Warranty {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "warranty_period", nullable = false)
+    @Column(name = "warranty_period") // có the null neu như đó là sản phẩm thue
     private OffsetDateTime warrantyPeriod;
 
     @Column(name = "warranty_terms", length = 750)

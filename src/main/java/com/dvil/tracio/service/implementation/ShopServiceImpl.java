@@ -7,6 +7,8 @@ import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.mapper.ShopMapper;
 import com.dvil.tracio.repository.ShopRepo;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.request.CreateEmployeeRequest;
+import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.ShopService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -105,6 +107,12 @@ public class ShopServiceImpl implements ShopService {
 
         shopRepo.delete(shop);
         return "Cửa hàng với ID " + id + " đã được xóa thành công!";
+    }
+
+    @Override
+    public RegisterResponse createEmployee(Integer shopId, CreateEmployeeRequest request) {
+
+        return null;
     }
 
     private User getCurrentUser() {

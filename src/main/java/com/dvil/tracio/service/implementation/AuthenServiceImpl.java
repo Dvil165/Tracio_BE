@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.util.Optional;
@@ -115,13 +116,15 @@ public class AuthenServiceImpl implements AuthenticationService {
                     userRepository.save(user);
                 }
             }
-            return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken(), user.getRefToken());
+            return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken()
+                                   , user.getRefToken(), user.getRole());
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sai tên đăng nhập hoặc mật khẩu");
         }
     }
 
     @Override
+    @Transactional
     public ResetPasswordResponse ResetPassword(ResetPasswordRequest request) throws Exception {
         try {
             User user = userRepository.findByEmail(request.getEmail())

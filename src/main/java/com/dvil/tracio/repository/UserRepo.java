@@ -1,7 +1,6 @@
 package com.dvil.tracio.repository;
 
 import com.dvil.tracio.entity.User;
-import com.dvil.tracio.enums.RoleName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

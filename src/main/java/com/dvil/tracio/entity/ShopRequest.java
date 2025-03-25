@@ -26,6 +26,16 @@ public class ShopRequest {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "shop_location")
+    private String shop_location;
+
+    @Column(name = "open_hours")
+    private String open_hours;
+
+    @ManyToOne
+    @JoinColumn(name = "processed_by")
+    private User processedBy;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private RequestStatus status = RequestStatus.PENDING; // Trạng thái duyệt

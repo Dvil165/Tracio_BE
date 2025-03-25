@@ -37,7 +37,6 @@ public class ShopRequestController {
         if (owner == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
-
         logger.info("Authenticated user: {}", userDetails.getUsername());
         return ResponseEntity.ok(shopRequestService.createShopRequest(request, owner));
     }

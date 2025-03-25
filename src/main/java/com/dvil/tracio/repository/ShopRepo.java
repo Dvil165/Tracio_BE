@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ShopRepo extends JpaRepository<Shop, Integer> {
     List<Shop> findByOwnerId(Integer ownerId);
-    Shop findByShpName(String name);
+    boolean existsByShpName(String shpname);
 }

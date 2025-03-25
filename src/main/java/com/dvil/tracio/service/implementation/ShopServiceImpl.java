@@ -63,14 +63,14 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public List<ShopDTO> getAllShops() {
         return shopRepo.findAll().stream()
-                .map(shopMapper::apply)
+                .map(shopMapper)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<ShopDTO> getShopsByOwnerId(Integer ownerId) {
         return shopRepo.findByOwnerId(ownerId).stream()
-                .map(shopMapper::apply)
+                .map(shopMapper)
                 .collect(Collectors.toList());
     }
 

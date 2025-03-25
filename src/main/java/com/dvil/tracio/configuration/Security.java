@@ -80,6 +80,10 @@ public class Security {
                 .authorizeHttpRequests( req ->
                     req.requestMatchers("/api/auth/**")
                             .permitAll()
+                            .requestMatchers("/api/uploads/**")
+                            .permitAll()
+                            .requestMatchers("/uploads/**")
+                            .permitAll()
                             .requestMatchers(ADMIN_URLS)
                             .hasAuthority("ADMIN")
                             .anyRequest()

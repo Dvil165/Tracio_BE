@@ -42,12 +42,20 @@ public class Security {
             "/api/admin/**"
     };
 
+    private static final String[] PERMIT_ALL_URLS = {
+            "/api/auth/**",
+            "/api/uploads/**",
+            "/uploads/**",
+            "/api/products"
+    };
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final UserDetailsServiceImp userDetailsServiceImp;
     private final UserDetailsService userDetailsService;
 
-    public Security(JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2LoginSuccessHandler oauth2LoginSuccessHandler, UserDetailsServiceImp userDetailsServiceImp, UserDetailsService userDetailsService) {
+    public Security(JwtAuthenticationFilter jwtAuthenticationFilter, OAuth2LoginSuccessHandler oauth2LoginSuccessHandler
+                  , UserDetailsServiceImp userDetailsServiceImp, UserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
         this.userDetailsServiceImp = userDetailsServiceImp;
@@ -78,11 +86,7 @@ public class Security {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfiguration()))
                 .authorizeHttpRequests( req ->
-                    req.requestMatchers("/api/auth/**")
-                            .permitAll()
-                            .requestMatchers("/api/uploads/**")
-                            .permitAll()
-                            .requestMatchers("/uploads/**")
+                    req.requestMatchers(PERMIT_ALL_URLS)
                             .permitAll()
                             .requestMatchers(ADMIN_URLS)
                             .hasAuthority("ADMIN")

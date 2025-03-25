@@ -48,7 +48,7 @@ public class Security {
             "/uploads/**",
             "/api/products"
     };
-
+    
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final UserDetailsServiceImp userDetailsServiceImp;

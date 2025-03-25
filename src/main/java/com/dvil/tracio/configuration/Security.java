@@ -42,6 +42,8 @@ public class Security {
             "/api/admin/**"
     };
 
+
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final UserDetailsServiceImp userDetailsServiceImp;

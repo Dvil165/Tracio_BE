@@ -17,7 +17,10 @@ public interface UserRepo extends JpaRepository<User, Integer> {
     //boolean existsByUserIdAndRole(Integer id, RoleName role);
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
-    List<User> findByShop(Shop shop);
+
+    @Query(value = "SELECT * FROM users WHERE shop_id = :shopId", nativeQuery = true)
+    List<User> findByShopId(@Param("shopId") Integer shopId);
+
     @Query(value = "SELECT COUNT(u.user_role) FROM users u WHERE u.user_role = :role", nativeQuery = true)
     Integer countByRole(@Param("role") String role);
 }

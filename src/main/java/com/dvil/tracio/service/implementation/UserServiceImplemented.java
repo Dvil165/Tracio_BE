@@ -42,6 +42,11 @@ public class UserServiceImplemented implements UserService {
         userRepository.deleteById(id);
     }
 
+    @Override
+    public List<User> getEmployeesByShop(Integer shopId) {
+        return userRepository.findByShopId(shopId);
+    }
+
 
 }
 

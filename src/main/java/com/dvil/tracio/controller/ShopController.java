@@ -71,25 +71,23 @@ public class ShopController {
         return ResponseEntity.ok(Map.of("message", message));
     }
 
-    @PostMapping("/{shopId}/employees/create")
-    public ResponseEntity<RegisterResponse> createEmployee(@PathVariable Integer shopId,
-                                                           @RequestBody CreateEmployeeRequest request,
+    @PostMapping("/employees/create")
+    public ResponseEntity<RegisterResponse> createEmployee(@RequestBody CreateEmployeeRequest request,
                                                            @AuthenticationPrincipal UserDetails userDetails) {
         User owner = userRepo.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return ResponseEntity.ok(shopService.createEmployee(shopId, request, owner));
+        return ResponseEntity.ok(shopService.createEmployee(request, owner));
     }
 
-    @GetMapping("/{shopId}/employees")
+    @GetMapping("/employees")
     @PreAuthorize("hasRole('SHOP_OWNER')")
-    public ResponseEntity<List<UserDTO>> getEmployeesByShop(@PathVariable Integer shopId,
-                                                            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<UserDTO>> getEmployeesByShop(@AuthenticationPrincipal UserDetails userDetails) {
         User owner = userRepo.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         if (owner == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
-        return ResponseEntity.ok(shopService.getEmployeesByShop(shopId, owner));
+        return ResponseEntity.ok(shopService.getEmployeesByShop(owner));
     }
 
 }

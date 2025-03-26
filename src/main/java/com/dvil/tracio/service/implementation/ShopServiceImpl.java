@@ -122,10 +122,10 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public RegisterResponse createEmployee(Integer shopId, CreateEmployeeRequest request, User owner) {
+    public RegisterResponse createEmployee(CreateEmployeeRequest request, User owner) {
 
-        Shop shop = shopRepo.findById(shopId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy shop ID " + shopId));
+        Shop shop = shopRepo.findById(owner.getShop().getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy shop ID " + owner.getShop().getId()));
 
 //        if (!shop.getOwner().getId().equals(owner.getId())) {
 //            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền tạo nhân viên cho shop này!");
@@ -161,13 +161,13 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public List<UserDTO> getEmployeesByShop(Integer shopId, User owner) {
+    public List<UserDTO> getEmployeesByShop(User owner) {
         if (!owner.getRole().equals(RoleName.SHOP_OWNER) || shopRepo.findByOwnerId(owner.getId()) == null) {
             throw new AccessDeniedException("You are not a shop owner");
         }
 
         Shop shop = shopRepo.findByOwnerId(owner.getId());
-        List<User> employees = userRepo.findByShop(shop);
+        List<User> employees = userRepo.findByShopId(shop.getId());
 
         return employees.stream()
                 .map(userMapper::toDTO)

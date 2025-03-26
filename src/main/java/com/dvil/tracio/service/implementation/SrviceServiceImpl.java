@@ -12,6 +12,8 @@
     import com.dvil.tracio.repository.SrviceRepo;
     import com.dvil.tracio.repository.UserRepo;
     import com.dvil.tracio.service.SrviceService;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import org.springframework.http.HttpStatus;
     import org.springframework.security.core.context.SecurityContextHolder;
     import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +27,9 @@
 
     @Service
     public class SrviceServiceImpl implements SrviceService {
+
+        private static final Logger logger = LoggerFactory.getLogger(SrviceServiceImpl.class);
+
         private final SrviceRepo srviceRepo;
         private final ShopRepo shopRepo;
         private final ShopServiceRepo shopServiceRepo;
@@ -54,31 +59,44 @@
 
         @Override
         @Transactional
-        public SrviceDTO createService(SrviceDTO srviceDTO) {
-            User user = getCurrentUser();
+        public SrviceDTO createService(SrviceDTO srviceDTO, Shop shop) {
+            try {
+                logger.info("Creating new service for shop: " + shop.getId());
 
-            if (!user.getRole().equals(RoleName.SHOP_OWNER)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ Shop Owner mới được tạo dịch vụ");
+                // Kiểm tra nếu service đã tồn tại
+                Srvice srvice = srviceMapper.toEntity(srviceDTO);
+                srvice.setCreatedAt(OffsetDateTime.now());
+                srvice.setServName(srviceDTO.getServType());
+                srvice.setServDescription(srviceDTO.getServDescription());
+
+                logger.info("Saving service: " + srvice.getServDescription());
+
+                // Lưu service
+                Srvice savedService = srviceRepo.save(srvice);
+                srviceRepo.flush();  // Đảm bảo dữ liệu được lưu ngay lập tức
+
+                // Kiểm tra xem service đã được lưu chưa
+                if (savedService == null || savedService.getId() == null) {
+                    throw new RuntimeException("Service save failed");
+                }
+
+                logger.info("Service saved: " + savedService.getId());
+
+                // Liên kết service với shop
+                ShopService shopService = new ShopService();
+                shopService.setCreatedAt(OffsetDateTime.now());
+                shopService.setService(savedService);
+                shopService.setShop(shop);
+                shopServiceRepo.save(shopService);
+                shopServiceRepo.flush(); // Đảm bảo lưu ngay lập tức
+
+                logger.info("ShopService saved successfully");
+
+                return srviceMapper.toDTO(savedService);
+            } catch (Exception e) {
+                logger.error("Lỗi khi lưu service: ", e);
+                throw new RuntimeException("Lỗi khi tạo service: " + e.getMessage());
             }
-
-            Shop shop = shopRepo.findByOwnerId(user.getId());
-            if (shop == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn chưa có shop nào. Vui lòng tạo shop trước khi thêm dịch vụ.");
-            }
-
-//            Shop shop = shops.get(0);
-
-            Srvice srvice = srviceMapper.toEntity(srviceDTO);
-            srvice.setCreatedAt(OffsetDateTime.now());
-            Srvice savedService = srviceRepo.save(srvice);
-
-            ShopService shopService = new ShopService();
-            shopService.setCreatedAt(OffsetDateTime.now());
-            shopService.setService(savedService);
-            shopService.setShop(shop);
-            shopServiceRepo.save(shopService);
-
-            return srviceMapper.toDTO(savedService);
         }
 
         @Override

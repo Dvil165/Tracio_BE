@@ -21,7 +21,7 @@ public interface ShopService {
 
     String deleteShop(Integer id);
 
-    RegisterResponse createEmployee(Integer shopId, CreateEmployeeRequest request, User owner);
+    RegisterResponse createEmployee(CreateEmployeeRequest request, User owner);
 
-    List<UserDTO> getEmployeesByShop(Integer shopId, User owner);
+    List<UserDTO> getEmployeesByShop(User owner);
 }

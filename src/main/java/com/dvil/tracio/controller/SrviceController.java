@@ -39,7 +39,7 @@ public class SrviceController {
         }
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createService(@RequestBody SrviceDTO srviceDTO) {
         try {
             SrviceDTO createdService = srviceService.createService(srviceDTO);

@@ -19,6 +19,14 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id") // Thêm quan hệ với Shop
+    private Shop shop;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id") // Thêm quan hệ với Staff
+    private User staff;
+
     @Column(name = "order_date", nullable = false, columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime orderDate;
 

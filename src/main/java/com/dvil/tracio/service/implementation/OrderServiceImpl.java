@@ -2,6 +2,7 @@ package com.dvil.tracio.service.implementation;
 
 import com.dvil.tracio.dto.OrderDTO;
 import com.dvil.tracio.entity.Order;
+import com.dvil.tracio.entity.Shop;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.mapper.OrderMapper;
 import com.dvil.tracio.repository.OrderRepo;
@@ -85,5 +86,15 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng với ID " + id + " không tồn tại"));
 
         orderRepo.delete(order);
+    }
+
+    @Override
+    public Integer getOrderCountByStaffID(User staff) {
+        return orderRepo.countOrdersByStaffId(staff.getId());
+    }
+
+    @Override
+    public Integer getOrderCountByShopID(Shop shop) {
+        return orderRepo.countOrdersByShopId(shop.getId());
     }
 }

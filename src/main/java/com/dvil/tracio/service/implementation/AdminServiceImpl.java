@@ -144,6 +144,7 @@ public class AdminServiceImpl implements AdminService {
         shop.setShpLocation(request.getShop_location());
         shop.setOpenHours(request.getOpen_hours());
         user.setRole(RoleName.SHOP_OWNER);
+        user.setShop(shop);
         userRepository.save(user);
         shop.setOwner(user);
         shopRepository.save(shop);

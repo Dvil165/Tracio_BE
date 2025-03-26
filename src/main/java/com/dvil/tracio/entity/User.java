@@ -62,6 +62,10 @@ public class User implements UserDetails {
     @Column(name = "verification_code", length = 500)
     private String verificationCode;
 
+    @ManyToOne
+    @JoinColumn(name = "shop_id", nullable = true) // User có thể thuộc shop hoặc không
+    private Shop shop;
+
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;  // Mặc định là true
 

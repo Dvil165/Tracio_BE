@@ -19,7 +19,8 @@ public class UserDTOMapper implements Function<User, UserDTO> {
                 user.getPhone(),
                 user.getCreatedAt(),
                 user.getAccountStatus(),
-                user.getRole() // Chỉ lấy 1 role duy nhất thay vì danh sách roles
+                user.getRole(),
+                user.getAccessToken()
         );
     }
 }

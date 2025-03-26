@@ -1,21 +1,29 @@
 package com.dvil.tracio.service.implementation;
 
 import com.dvil.tracio.dto.ShopDTO;
+import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.Shop;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.enums.RoleName;
+import com.dvil.tracio.enums.UserVerifyStatus;
 import com.dvil.tracio.mapper.ShopMapper;
+import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.ShopRepo;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.CreateEmployeeRequest;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.ShopService;
+import com.dvil.tracio.util.JwtService;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,11 +33,17 @@ public class ShopServiceImpl implements ShopService {
     private final ShopRepo shopRepo;
     private final UserRepo userRepo;
     private final ShopMapper shopMapper;
+    private final UserMapper userMapper;
+    private final JwtService jwtService;
 
-    public ShopServiceImpl(ShopRepo shopRepo, UserRepo userRepo, ShopMapper shopMapper) {
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    public ShopServiceImpl(ShopRepo shopRepo, UserRepo userRepo, ShopMapper shopMapper, UserMapper userMapper, JwtService jwtService) {
         this.shopRepo = shopRepo;
         this.userRepo = userRepo;
         this.shopMapper = shopMapper;
+        this.userMapper = userMapper;
+        this.jwtService = jwtService;
     }
 
 
@@ -70,10 +84,8 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public List<ShopDTO> getShopsByOwnerId(Integer ownerId) {
-        return shopRepo.findByOwnerId(ownerId).stream()
-                .map(shopMapper)
-                .collect(Collectors.toList());
+    public ShopDTO getShopsByOwnerId(Integer ownerId) {
+        return shopMapper.apply(shopRepo.findByOwnerId(ownerId));
     }
 
     @Override
@@ -110,9 +122,57 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public RegisterResponse createEmployee(Integer shopId, CreateEmployeeRequest request) {
+    public RegisterResponse createEmployee(Integer shopId, CreateEmployeeRequest request, User owner) {
 
-        return null;
+        Shop shop = shopRepo.findById(shopId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy shop ID " + shopId));
+
+//        if (!shop.getOwner().getId().equals(owner.getId())) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền tạo nhân viên cho shop này!");
+//        }
+
+        if (userRepo.existsByUsername(request.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username đã tồn tại!");
+        }
+        if (userRepo.existsByEmail(request.getMail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã được sử dụng!");
+        }
+
+
+        User newEmployee = new User();
+        newEmployee.setUsername(request.getUsername());
+        newEmployee.setEmail(request.getMail());
+        newEmployee.setUserPassword(encoder.encode(request.getPassword())); // Mã hóa mật khẩu
+        newEmployee.setPhone(null);
+        newEmployee.setCreatedAt(Instant.now());
+        newEmployee.setRole(RoleName.STAFF); // Role mặc định là STAFF
+        newEmployee.setShop(shop); // Gán shop cho nhân viên
+        newEmployee.setAccountStatus(UserVerifyStatus.Verified); // Mặc định nhân viên đã xác thực
+
+        String accessToken = jwtService.generateAccessToken(newEmployee);
+        String refreshToken = jwtService.generateRefreshToken(newEmployee);
+        newEmployee.setAccessToken(accessToken);
+        newEmployee.setRefToken(refreshToken);
+
+        userRepo.save(newEmployee);
+
+        UserDTO userDTO = userMapper.toDTO(newEmployee);
+        return new RegisterResponse("Nhân viên được tạo thành công!", userDTO, accessToken, refreshToken);
+    }
+
+    @Override
+    public List<UserDTO> getEmployeesByShop(Integer shopId, User owner) {
+        if (!owner.getRole().equals(RoleName.SHOP_OWNER) || shopRepo.findByOwnerId(owner.getId()) == null) {
+            throw new AccessDeniedException("You are not a shop owner");
+        }
+
+        Shop shop = shopRepo.findByOwnerId(owner.getId());
+        List<User> employees = userRepo.findByShop(shop);
+
+        return employees.stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
+
     }
 
     private User getCurrentUser() {

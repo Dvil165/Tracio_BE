@@ -12,6 +12,7 @@ public record UserDTO(
         String phone,
         Instant createdAt,
         UserVerifyStatus accountStatus,
-        RoleName role // Đổi từ RoleName thành List<RoleName>
+        RoleName role,
+        String accessToken
 ) {
 }

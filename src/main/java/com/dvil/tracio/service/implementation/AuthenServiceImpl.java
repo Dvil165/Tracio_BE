@@ -62,6 +62,7 @@ public class AuthenServiceImpl implements AuthenticationService {
     public RegisterResponse Register(RegisterRequest request) {
         verifyUserRequest.ValidRegister(request);
         // Tạo User mới
+        //logger.info(request.getRole().name());
         User newUser = new User();
         newUser.setEmail(request.getEmail());
         newUser.setUsername(request.getUsername());
@@ -72,6 +73,10 @@ public class AuthenServiceImpl implements AuthenticationService {
 
         newUser.setRole(request.getRole() == null ? RoleName.CYCLIST : request.getRole());
         // Tạo JWT Token
+//        if (newUser.getRole() == RoleName.CYCLIST || newUser.getRole() == RoleName.STAFF){
+//            newUser.setShop(null);
+//        }
+
         String accessToken = jwtService.generateAccessToken(newUser);
         newUser.setAccessToken(accessToken);
         String refreshToken = jwtService.generateRefreshToken(newUser);

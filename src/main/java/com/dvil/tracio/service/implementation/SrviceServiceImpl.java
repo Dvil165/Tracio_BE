@@ -61,12 +61,12 @@
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ Shop Owner mới được tạo dịch vụ");
             }
 
-            List<Shop> shops = shopRepo.findByOwnerId(user.getId());
-            if (shops.isEmpty()) {
+            Shop shop = shopRepo.findByOwnerId(user.getId());
+            if (shop == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn chưa có shop nào. Vui lòng tạo shop trước khi thêm dịch vụ.");
             }
 
-            Shop shop = shops.get(0);
+//            Shop shop = shops.get(0);
 
             Srvice srvice = srviceMapper.toEntity(srviceDTO);
             srvice.setCreatedAt(OffsetDateTime.now());

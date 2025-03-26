@@ -38,7 +38,6 @@ public class Security {
     private String googleClientSecret;
 
     private static final String[] ADMIN_URLS = {
-            "/api/user/**",
             "/api/admin/**"
     };
 

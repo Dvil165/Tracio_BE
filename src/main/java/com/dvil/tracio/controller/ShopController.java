@@ -3,11 +3,18 @@ package com.dvil.tracio.controller;
 import com.dvil.tracio.dto.ShopDTO;
 import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
+import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.CreateEmployeeRequest;
+import com.dvil.tracio.request.CreateShopRequest;
+import com.dvil.tracio.response.CreateShopResponse;
 import com.dvil.tracio.response.RegisterResponse;
 import com.dvil.tracio.service.ShopService;
+import com.dvil.tracio.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,10 +27,13 @@ import java.util.Objects;
 @RequestMapping("/api/shops")
 public class ShopController {
     private final ShopService shopService;
+    private final UserRepo userRepo;
 
-    public ShopController(ShopService shopService) {
+    public ShopController(ShopService shopService, UserRepo userRepo) {
         this.shopService = shopService;
+        this.userRepo = userRepo;
     }
+
 
     @PostMapping("/{ownerId}")
     public ResponseEntity<String> createShop(@RequestBody ShopDTO shopDTO, @PathVariable Integer ownerId) {
@@ -45,7 +55,7 @@ public class ShopController {
     }
 
     @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<ShopDTO>> getShopsByOwnerId(@PathVariable Integer ownerId) {
+    public ResponseEntity<ShopDTO> getShopsByOwnerId(@PathVariable Integer ownerId) {
         return ResponseEntity.ok(shopService.getShopsByOwnerId(ownerId));
     }
 
@@ -61,8 +71,25 @@ public class ShopController {
         return ResponseEntity.ok(Map.of("message", message));
     }
 
-    @PostMapping("/{shopId}/employees")
-    public ResponseEntity<RegisterResponse> createEmployee(@PathVariable Integer shopId, @RequestBody CreateEmployeeRequest request) {
-        return ResponseEntity.ok(shopService.createEmployee(shopId, request));
+    @PostMapping("/{shopId}/employees/create")
+    public ResponseEntity<RegisterResponse> createEmployee(@PathVariable Integer shopId,
+                                                           @RequestBody CreateEmployeeRequest request,
+                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        User owner = userRepo.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return ResponseEntity.ok(shopService.createEmployee(shopId, request, owner));
     }
+
+    @GetMapping("/{shopId}/employees")
+    @PreAuthorize("hasRole('SHOP_OWNER')")
+    public ResponseEntity<List<UserDTO>> getEmployeesByShop(@PathVariable Integer shopId,
+                                                            @AuthenticationPrincipal UserDetails userDetails) {
+        User owner = userRepo.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (owner == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+        }
+        return ResponseEntity.ok(shopService.getEmployeesByShop(shopId, owner));
+    }
+
 }

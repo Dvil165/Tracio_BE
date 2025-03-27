@@ -1,10 +1,13 @@
 package com.dvil.tracio.repository;
 
+import com.dvil.tracio.dto.OrderDTO;
 import com.dvil.tracio.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Integer> {
@@ -24,5 +27,8 @@ public interface OrderRepo extends JpaRepository<Order, Integer> {
             "ORDER BY COUNT(o.id) ASC",
             nativeQuery = true)
     Integer findLeastBusyStaff(@Param("shopId") Integer shopId);
+
+    @Query(value = "SELECT * FROM Orders WHERE staff_id = :staffId", nativeQuery = true)
+    List<Order> findByStaffId(@Param("staffId") Integer staffId);
 
 }

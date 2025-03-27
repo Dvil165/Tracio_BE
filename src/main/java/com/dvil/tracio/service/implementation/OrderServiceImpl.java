@@ -26,20 +26,24 @@ public class OrderServiceImpl implements OrderService {
     private final ShopRepo shopRepo;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepo productRepo;
-    private final OrderMapper orderMapper = OrderMapper.INSTANCE;
+    private final OrderMapper orderMapper;
 
-    public OrderServiceImpl(OrderRepo orderRepo, UserRepo userRepo, ShopRepo shopRepo, OrderDetailRepository orderDetailRepository, ProductRepo productRepo) {
+    public OrderServiceImpl(OrderRepo orderRepo, UserRepo userRepo, ShopRepo shopRepo,
+                            OrderDetailRepository orderDetailRepository, ProductRepo productRepo,
+                            OrderMapper orderMapper) {
         this.orderRepo = orderRepo;
         this.userRepo = userRepo;
         this.shopRepo = shopRepo;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepo = productRepo;
+        this.orderMapper = orderMapper;
     }
+
 
     @Override
     public List<OrderDTO> getAllOrders() {
         List<OrderDTO> orders = orderRepo.findAll().stream()
-                .map(orderMapper::toDTO)
+                .map(orderMapper::apply)
                 .collect(Collectors.toList());
 
         if (orders.isEmpty()) {
@@ -53,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng với ID " + id + " không tồn tại"));
 
-        return orderMapper.toDTO(order);
+        return orderMapper.apply(order);
     }
 
     @Override
@@ -92,11 +96,9 @@ public class OrderServiceImpl implements OrderService {
 
             orderDetailRepository.save(orderDetail);
         }
-
         return new OrderResponse(new OrderDTO(user.getId(), shop.getId(),
                                               staff.getUsername(), order.getStatus(), order.getTotalPrice()));
     }
-
 
     @Override
     @Transactional
@@ -104,10 +106,10 @@ public class OrderServiceImpl implements OrderService {
         Order existingOrder = orderRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Đơn hàng với ID " + id + " không tồn tại"));
 
-        existingOrder.setStatus(orderDTO.getStatus());
-        existingOrder.setTotalPrice(orderDTO.getTotalPrice());
+        existingOrder.setStatus(orderDTO.status());
+        existingOrder.setTotalPrice(orderDTO.totalPrice());
 
-        return orderMapper.toDTO(orderRepo.save(existingOrder));
+        return orderMapper.apply(orderRepo.save(existingOrder));
     }
 
     @Override
@@ -128,4 +130,5 @@ public class OrderServiceImpl implements OrderService {
     public Integer getOrderCountByShopID(Shop shop) {
         return orderRepo.countOrdersByShopId(shop.getId());
     }
+
 }

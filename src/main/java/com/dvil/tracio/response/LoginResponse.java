@@ -15,4 +15,5 @@ public class LoginResponse {
     private String refreshToken;
     private RoleName role;
     private Integer shopID;
+    private String phone;
 }

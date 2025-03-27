@@ -20,7 +20,7 @@ public interface OrderRepo extends JpaRepository<Order, Integer> {
     @Query(value = """
     SELECT u.id FROM users u
     LEFT JOIN orders o ON u.id = o.staff_id
-    WHERE u.role = 'STAFF' AND u.shop_id = :shopId
+    WHERE u.user_role = 'STAFF' AND u.shop_id = :shopId
     GROUP BY u.id
     ORDER BY COUNT(o.id) ASC
     LIMIT 1

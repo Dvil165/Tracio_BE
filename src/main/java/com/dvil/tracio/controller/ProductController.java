@@ -20,13 +20,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllProducts() {
-        try {
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
             List<ProductDTO> products = productService.getAllProducts();
             return ResponseEntity.ok(products);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
     }
 
     @GetMapping("/{id}")

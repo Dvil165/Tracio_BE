@@ -7,6 +7,8 @@ import com.dvil.tracio.entity.User;
 import com.dvil.tracio.mapper.OrderMapper;
 import com.dvil.tracio.repository.OrderRepo;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.request.OrderRequest;
+import com.dvil.tracio.response.OrderResponse;
 import com.dvil.tracio.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -50,22 +52,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        if (orderDTO.getUserId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserId là bắt buộc");
-        }
-
-        User user = userRepo.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng với ID " + orderDTO.getUserId() + " không tồn tại"));
-
-        Order order = orderMapper.toEntity(orderDTO);
-        order.setUser(user);
-        order.setOrderDate(OffsetDateTime.now());
-
-        order = orderRepo.save(order);
-        return orderMapper.toDTO(order);
+    public OrderResponse createOrder(OrderRequest request) {
+        return null;
     }
 
+//    @Override
+//    @Transactional
+//    public OrderDTO createOrder(OrderDTO orderDTO, User user) {
+//        Integer staffId = orderRepo.findLeastBusyStaff(shopId);
+//        Order order = orderMapper.toEntity(orderDTO);
+//        order.setUser(user);
+//        order.setOrderDate(OffsetDateTime.now());
+//        order = orderRepo.save(order);
+//        return orderMapper.toDTO(order);
+//    }
 
     @Override
     @Transactional

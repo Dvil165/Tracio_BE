@@ -6,9 +6,13 @@ import com.dvil.tracio.entity.User;
 import com.dvil.tracio.mapper.OrderMapper;
 import com.dvil.tracio.repository.ShopRepo;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.request.OrderRequest;
+import com.dvil.tracio.response.OrderResponse;
 import com.dvil.tracio.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -50,14 +54,13 @@ public class OrderController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) {
-        try {
-            OrderDTO createdOrder = orderService.createOrder(orderDTO);
-            return ResponseEntity.ok(Map.of("message", "Đơn hàng đã được tạo thành công!", "order", createdOrder));
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+    @PostMapping("/create")
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request,
+                                                     @AuthenticationPrincipal UserDetails userDetails) {
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            request.setUserId(user.getId());
+            return ResponseEntity.ok(orderService.createOrder(request));
     }
 
     @PutMapping("/{id}")

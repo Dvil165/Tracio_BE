@@ -40,7 +40,6 @@ public class Order {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
-
     @Column(name = "total_price", nullable = false)
     private Double totalPrice;
 }

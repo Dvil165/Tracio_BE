@@ -123,6 +123,7 @@ public class GroupRideServiceImpl implements GroupRideService {
     @Transactional
     public GroupRideDTO updateGroupRide(Integer id, GroupRideDTO groupRideDTO) {
         User user = getCurrentUser();
+
         GroupRide existingGroupRide = groupRideRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "GroupRide với ID " + id + " không tồn tại"));
 
@@ -133,23 +134,49 @@ public class GroupRideServiceImpl implements GroupRideService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật GroupRide này");
         }
 
-        if (existingGroupRide.getMatchType() == MatchType.OPEN && groupRideDTO.getMatchType() == MatchType.PRIVATE) {
-            if (groupRideDTO.getMatchPassword() == null || groupRideDTO.getMatchPassword().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần nhập mật khẩu khi chuyển từ OPEN sang PRIVATE");
-            }
+        // Nếu chuyển từ OPEN sang PRIVATE thì phải có mật khẩu
+        if (existingGroupRide.getMatchType() == MatchType.OPEN
+                && groupRideDTO.getMatchType() == MatchType.PRIVATE
+                && (groupRideDTO.getMatchPassword() == null || groupRideDTO.getMatchPassword().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần nhập mật khẩu khi chuyển từ OPEN sang PRIVATE");
         }
 
-        existingGroupRide.setMatchPassword(groupRideDTO.getMatchPassword());
-        existingGroupRide.setStartTime(groupRideDTO.getStartTime());
-        existingGroupRide.setFinishTime(groupRideDTO.getFinishTime());
-        existingGroupRide.setStartPoint(groupRideDTO.getStartPoint());
-        existingGroupRide.setEndPoint(groupRideDTO.getEndPoint());
-        existingGroupRide.setLocation(groupRideDTO.getLocation());
-        existingGroupRide.setMatchStatus(groupRideDTO.getMatchStatus());
-        existingGroupRide.setMatchType(groupRideDTO.getMatchType());
+        // Partial update
+        if (groupRideDTO.getMatchType() != null) {
+            existingGroupRide.setMatchType(groupRideDTO.getMatchType());
+        }
+
+        if (groupRideDTO.getMatchPassword() != null && !groupRideDTO.getMatchPassword().isBlank()) {
+            existingGroupRide.setMatchPassword(groupRideDTO.getMatchPassword());
+        }
+
+        if (groupRideDTO.getStartTime() != null) {
+            existingGroupRide.setStartTime(groupRideDTO.getStartTime());
+        }
+
+        if (groupRideDTO.getFinishTime() != null) {
+            existingGroupRide.setFinishTime(groupRideDTO.getFinishTime());
+        }
+
+        if (groupRideDTO.getStartPoint() != null && !groupRideDTO.getStartPoint().isBlank()) {
+            existingGroupRide.setStartPoint(groupRideDTO.getStartPoint());
+        }
+
+        if (groupRideDTO.getEndPoint() != null && !groupRideDTO.getEndPoint().isBlank()) {
+            existingGroupRide.setEndPoint(groupRideDTO.getEndPoint());
+        }
+
+        if (groupRideDTO.getLocation() != null && !groupRideDTO.getLocation().isBlank()) {
+            existingGroupRide.setLocation(groupRideDTO.getLocation());
+        }
+
+        if (groupRideDTO.getMatchStatus() != null) {
+            existingGroupRide.setMatchStatus(groupRideDTO.getMatchStatus());
+        }
 
         return groupRideMapper.toDTO(groupRideRepo.save(existingGroupRide));
     }
+
 
     @Override
     @Transactional

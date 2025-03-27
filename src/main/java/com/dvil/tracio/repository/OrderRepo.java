@@ -17,13 +17,12 @@ public interface OrderRepo extends JpaRepository<Order, Integer> {
     @Query(value = "SELECT COUNT(*) FROM orders WHERE staff_id = :staffId", nativeQuery = true)
     Integer countOrdersByStaffId(@Param("staffId") Integer staffId);
 
-    @Query(value = """
-    SELECT u.id FROM users u
-    LEFT JOIN orders o ON u.id = o.staff_id
-    WHERE u.user_role = 'STAFF' AND u.shop_id = :shopId
-    GROUP BY u.id
-    ORDER BY COUNT(o.id) ASC
-    LIMIT 1
-    """, nativeQuery = true)
+    @Query(value = "SELECT TOP 1 u.id FROM users u " +
+            "LEFT JOIN orders o ON u.id = o.staff_id " +
+            "WHERE u.user_role = 'STAFF' AND u.shop_id = :shopId " +
+            "GROUP BY u.id " +
+            "ORDER BY COUNT(o.id) ASC",
+            nativeQuery = true)
     Integer findLeastBusyStaff(@Param("shopId") Integer shopId);
+
 }

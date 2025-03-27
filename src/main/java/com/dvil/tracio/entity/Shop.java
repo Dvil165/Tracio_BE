@@ -8,8 +8,10 @@ import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-    @Getter
+@Getter
     @Setter
     @Entity
     @Table(name = "shops")
@@ -39,6 +41,9 @@ import java.time.OffsetDateTime;
         @OnDelete(action = OnDeleteAction.CASCADE)
         @JoinColumn(name = "owner_id", nullable = false)
         private User owner;
+
+        @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<Srvice> services = new ArrayList<>();
 
         // Set thời gian tạo tự động
         @PrePersist

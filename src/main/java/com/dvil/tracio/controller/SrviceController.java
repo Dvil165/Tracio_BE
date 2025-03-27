@@ -3,6 +3,8 @@ package com.dvil.tracio.controller;
 import com.dvil.tracio.dto.SrviceDTO;
 import com.dvil.tracio.entity.Shop;
 import com.dvil.tracio.entity.User;
+import com.dvil.tracio.repository.ShopRepo;
+import com.dvil.tracio.repository.SrviceRepo;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.service.SrviceService;
 import org.springframework.http.HttpStatus;
@@ -22,10 +24,12 @@ import java.util.Objects;
 public class SrviceController {
     private final SrviceService srviceService;
     private final UserRepo userRepo;
+    private final SrviceRepo srviceRepo;
 
-    public SrviceController(SrviceService srviceService, UserRepo userRepo) {
+    public SrviceController(SrviceService srviceService, UserRepo userRepo, SrviceRepo srviceRepo) {
         this.srviceService = srviceService;
         this.userRepo = userRepo;
+        this.srviceRepo = srviceRepo;
     }
 
     @GetMapping
@@ -60,8 +64,11 @@ public class SrviceController {
             User owner = userRepo.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
             Shop shop = owner.getShop();
+            boolean isServiceExists = srviceRepo.existsByServNameAndShop_Id(srviceDTO.getServType(), shop.getId());
+            if (isServiceExists) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "This service type already exists in the shop.");
+            }
             SrviceDTO createdService = srviceService.createService(srviceDTO, shop);
-
             if (createdService == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                         "message", "Không thể tạo dịch vụ, vui lòng thử lại!"

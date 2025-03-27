@@ -63,10 +63,23 @@ public class RouteDetailServiceImpl implements RouteDetailService {
 
     @Override
     public List<RouteDetailDTO> getRouteDetailsByRouteId(Integer routeId) {
+        Route route = routeRepo.findById(routeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Route không tồn tại"));
+
+        User currentUser = getCurrentUser();
+
+        boolean isAdmin = currentUser.getRole().equals(RoleName.ADMIN);
+        boolean isOwner = route.getUser().getId().equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem RouteDetail của route này");
+        }
+
         List<RouteDetail> details = routeDetailRepo.findByRouteId(routeId);
         if (details.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có RouteDetail nào cho Route ID: " + routeId);
         }
+
         return details.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 

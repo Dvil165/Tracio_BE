@@ -60,6 +60,23 @@ public class GroupRideServiceImpl implements GroupRideService {
         return dto;
     }
 
+    @Override
+    public List<GroupRideDTO> getMyGroupRides() {
+        User currentUser = getCurrentUser();
+        List<GroupRide> myGroupRides = groupRideRepo.findByCreatedBy_Id(currentUser.getId());
+
+        if (myGroupRides.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bạn chưa tạo GroupRide nào.");
+        }
+
+        return myGroupRides.stream()
+                .map(groupRide -> {
+                    GroupRideDTO dto = groupRideMapper.toDTO(groupRide);
+                    dto.setMatchPassword(null); // Ẩn mật khẩu
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional

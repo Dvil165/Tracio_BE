@@ -29,14 +29,18 @@ public class SrviceController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllServices() {
-        try {
-            List<SrviceDTO> services = srviceService.getAllServices();
-            return ResponseEntity.ok(services);
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
-        }
+    public ResponseEntity<List<SrviceDTO>> getAllServicesOfAShop(@AuthenticationPrincipal UserDetails user) {
+        User owner = userRepo.findByUsername(user.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        List<SrviceDTO> services = srviceService.getAllServicesOfAShop(owner);
+        return ResponseEntity.ok(services);
     }
+
+//    @GetMapping
+//    public ResponseEntity<List<SrviceDTO>> getAllServices() {
+//        List<SrviceDTO> services = srviceService.getAllServices();
+//        return ResponseEntity.ok(services);
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getServiceById(@PathVariable Integer id) {

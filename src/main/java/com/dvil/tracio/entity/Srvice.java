@@ -23,6 +23,10 @@ public class Srvice {
     @Column(name = "serv_description", length = 1000)
     private String servDescription;
 
+    @ManyToOne
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
+
     @Column(name = "serv_name", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private ServiceType servName;

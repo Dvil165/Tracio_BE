@@ -6,6 +6,7 @@
     import com.dvil.tracio.entity.Srvice;
     import com.dvil.tracio.entity.User;
     import com.dvil.tracio.enums.RoleName;
+    import com.dvil.tracio.exception.ServiceException;
     import com.dvil.tracio.mapper.SrviceMapper;
     import com.dvil.tracio.repository.ShopRepo;
     import com.dvil.tracio.repository.ShopServiceRepo;
@@ -51,6 +52,14 @@
         }
 
         @Override
+        public List<SrviceDTO> getAllServicesOfAShop(User user) {
+            List<Srvice> services = srviceRepo.findAllByShopId(user.getShop().getId());
+            return services.stream()
+                    .map(srviceMapper::toDTO) // Convert Srvice -> SrviceDTO
+                    .collect(Collectors.toList());
+        }
+
+        @Override
         public SrviceDTO getServiceById(Integer id) {
             Srvice srvice = srviceRepo.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dịch vụ với ID " + id + " không tồn tại"));
@@ -68,7 +77,7 @@
                         shop.getId(), srviceDTO.getServType());
 
                 if (isShopServiceExists) {
-                    throw new RuntimeException("This service type already exists in the shop.");
+                    throw new ServiceException("This service type already exists in the shop.");
                 }
 
                 // Nếu chưa tồn tại, tạo service mới
@@ -76,6 +85,7 @@
                 srvice.setCreatedAt(OffsetDateTime.now());
                 srvice.setServName(srviceDTO.getServType()); // Loại dịch vụ
                 srvice.setServDescription(srviceDTO.getServDescription()); // Mô tả riêng cho shop này
+                srvice.setShop(shop);
                 srvice = srviceRepo.save(srvice);
                 srviceRepo.flush();
 
@@ -91,9 +101,12 @@
 
                 logger.info("ShopService saved successfully");
                 return srviceMapper.toDTO(srvice);
+            } catch (ServiceException e) {
+                logger.info("Business logic error: {}", e.getMessage());
+                throw e;
             } catch (Exception e) {
-                logger.error("Lỗi khi lưu service: ", e);
-                throw new RuntimeException("Lỗi khi tạo service: " + e.getMessage());
+                logger.error("Unexpected error when saving service: ", e);
+                throw new RuntimeException("Lỗi hệ thống, vui lòng thử lại sau.");
             }
         }
 

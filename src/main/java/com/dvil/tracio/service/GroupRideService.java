@@ -6,7 +6,7 @@ import java.util.List;
 public interface GroupRideService {
     List<GroupRideDTO> getAllGroupRides();
     GroupRideDTO getGroupRideById(Integer id);
-    List<GroupRideDTO> getMyGroupRides();
+    List<GroupRideDTO> getMyCreatedGroupRides();
     GroupRideDTO createGroupRide(GroupRideDTO groupRideDTO);
     GroupRideDTO updateGroupRide(Integer id, GroupRideDTO groupRideDTO);
     void deleteGroupRide(Integer id);

@@ -8,6 +8,7 @@ public interface GroupRideJoinerService {
     void leaveGroupRide(Integer groupRideId);
     List<GroupRideJoinerDTO> getAllJoiners();
     List<GroupRideJoinerDTO> getJoinersByGroupRideId(Integer groupRideId);
+    List<GroupRideJoinerDTO> getMyJoinedGroupRides();
 
 }
 

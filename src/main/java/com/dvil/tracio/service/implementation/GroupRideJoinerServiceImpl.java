@@ -111,6 +111,31 @@ public class GroupRideJoinerServiceImpl implements GroupRideJoinerService {
                 .map(groupRideJoinerMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<GroupRideJoinerDTO> getMyJoinedGroupRides() {
+        User currentUser = getCurrentUser();
+
+        // Lấy danh sách các group do user này tạo
+        List<GroupRide> createdGroups = groupRideRepo.findByCreatedBy_Id(currentUser.getId());
+        List<Integer> createdGroupIds = createdGroups.stream()
+                .map(GroupRide::getId)
+                .collect(Collectors.toList());
+
+        // Lấy các group user đã tham gia
+        List<GroupRideJoiner> joined = groupRideJoinerRepo.findByUser_Id(currentUser.getId());
+
+        // Lọc ra những group mà user tham gia nhưng không phải người tạo
+        List<GroupRideJoinerDTO> result = joined.stream()
+                .filter(joiner -> !createdGroupIds.contains(joiner.getGroupRide().getId()))
+                .map(groupRideJoinerMapper::toDTO)
+                .collect(Collectors.toList());
+
+        if (result.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bạn chưa tham gia GroupRide nào.");
+        }
+
+        return result;
+    }
 
 
     private User getCurrentUser() {

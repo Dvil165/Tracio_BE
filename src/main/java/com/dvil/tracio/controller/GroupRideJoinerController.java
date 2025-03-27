@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/group-ride-joiners")
@@ -24,7 +25,7 @@ public class GroupRideJoinerController {
             List<GroupRideJoinerDTO> joiners = groupRideJoinerService.getAllJoiners();
             return ResponseEntity.ok(joiners);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
     @GetMapping("/{groupRideId}")
@@ -33,7 +34,7 @@ public class GroupRideJoinerController {
             List<GroupRideJoinerDTO> joiners = groupRideJoinerService.getJoinersByGroupRideId(groupRideId);
             return ResponseEntity.ok(joiners);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", ex.getReason()));
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
         }
     }
 
@@ -59,4 +60,14 @@ public class GroupRideJoinerController {
             return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
     }
+    @GetMapping("/my-joined")
+    public ResponseEntity<?> getMyJoinedGroupRides() {
+        try {
+            List<GroupRideJoinerDTO> joined = groupRideJoinerService.getMyJoinedGroupRides();
+            return ResponseEntity.ok(joined);
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("message", Objects.requireNonNull(ex.getReason())));
+        }
+    }
+
 }

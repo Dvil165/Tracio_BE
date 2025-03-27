@@ -90,6 +90,7 @@ public class GroupRideServiceImpl implements GroupRideService {
     @Transactional
     public GroupRideDTO createGroupRide(GroupRideDTO groupRideDTO) {
         User user = getCurrentUser();
+
         Route route = routeRepo.findById(groupRideDTO.getRouteId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Route"));
 
@@ -107,6 +108,8 @@ public class GroupRideServiceImpl implements GroupRideService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GroupRide PRIVATE cần có mật khẩu");
             }
             groupRide.setMatchPassword(groupRideDTO.getMatchPassword());
+        } else {
+            groupRide.setMatchPassword(null);
         }
 
         groupRide = groupRideRepo.save(groupRide);
@@ -116,8 +119,11 @@ public class GroupRideServiceImpl implements GroupRideService {
         joiner.setGroupRide(groupRide);
         groupRideJoinerRepo.save(joiner);
 
-        return groupRideMapper.toDTO(groupRide);
+        GroupRideDTO dto = groupRideMapper.toDTO(groupRide);
+        dto.setMatchPassword(null);
+        return dto;
     }
+
 
     @Override
     @Transactional
@@ -134,22 +140,37 @@ public class GroupRideServiceImpl implements GroupRideService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật GroupRide này");
         }
 
-        // Nếu chuyển từ OPEN sang PRIVATE thì phải có mật khẩu
-        if (existingGroupRide.getMatchType() == MatchType.OPEN
-                && groupRideDTO.getMatchType() == MatchType.PRIVATE
-                && (groupRideDTO.getMatchPassword() == null || groupRideDTO.getMatchPassword().isBlank())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần nhập mật khẩu khi chuyển từ OPEN sang PRIVATE");
-        }
-
-        // Partial update
+        // Nếu cập nhật MatchType
         if (groupRideDTO.getMatchType() != null) {
+            // Nếu chuyển từ OPEN → PRIVATE thì cần mật khẩu
+            if (existingGroupRide.getMatchType() == MatchType.OPEN &&
+                    groupRideDTO.getMatchType() == MatchType.PRIVATE &&
+                    (groupRideDTO.getMatchPassword() == null || groupRideDTO.getMatchPassword().isBlank())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần nhập mật khẩu khi chuyển từ OPEN sang PRIVATE");
+            }
+
+            // Nếu chuyển từ PRIVATE → OPEN thì xóa mật khẩu
+            if (existingGroupRide.getMatchType() == MatchType.PRIVATE &&
+                    groupRideDTO.getMatchType() == MatchType.OPEN) {
+                existingGroupRide.setMatchPassword(null);
+            }
+
             existingGroupRide.setMatchType(groupRideDTO.getMatchType());
         }
 
+        // Nếu vẫn là PRIVATE và người dùng truyền mật khẩu mới
         if (groupRideDTO.getMatchPassword() != null && !groupRideDTO.getMatchPassword().isBlank()) {
             existingGroupRide.setMatchPassword(groupRideDTO.getMatchPassword());
         }
 
+        // Cập nhật route nếu có
+        if (groupRideDTO.getRouteId() != null) {
+            Route route = routeRepo.findById(groupRideDTO.getRouteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Route không tồn tại"));
+            existingGroupRide.setRoute(route);
+        }
+
+        // Các trường khác
         if (groupRideDTO.getStartTime() != null) {
             existingGroupRide.setStartTime(groupRideDTO.getStartTime());
         }
@@ -174,8 +195,11 @@ public class GroupRideServiceImpl implements GroupRideService {
             existingGroupRide.setMatchStatus(groupRideDTO.getMatchStatus());
         }
 
-        return groupRideMapper.toDTO(groupRideRepo.save(existingGroupRide));
+        GroupRideDTO dto = groupRideMapper.toDTO(groupRideRepo.save(existingGroupRide));
+        dto.setMatchPassword(null);
+        return dto;
     }
+
 
 
     @Override

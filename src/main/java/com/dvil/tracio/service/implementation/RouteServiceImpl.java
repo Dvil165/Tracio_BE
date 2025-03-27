@@ -65,7 +65,7 @@ public class RouteServiceImpl implements RouteService {
 
         Route route = routeMapper.toEntity(routeDTO);
         route.setUser(user); // ✅ Gán đúng user hiện tại
-
+        route.setUsername(user.getUsername());
         Route savedRoute = routeRepo.save(route);
         return routeMapper.toDTO(savedRoute);
     }

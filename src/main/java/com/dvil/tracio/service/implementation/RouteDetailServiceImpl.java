@@ -70,12 +70,12 @@ public class RouteDetailServiceImpl implements RouteDetailService {
         return details.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    @Override
-    public RouteDetailDTO getRouteDetailById(Integer id) {
-        RouteDetail routeDetail = routeDetailRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RouteDetail với ID " + id + " không tồn tại"));
-        return mapToDTO(routeDetail);
-    }
+//    @Override
+//    public RouteDetailDTO getRouteDetailById(Integer id) {
+//        RouteDetail routeDetail = routeDetailRepo.findById(id)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RouteDetail với ID " + id + " không tồn tại"));
+//        return mapToDTO(routeDetail);
+//    }
 
     @Override
     @Transactional

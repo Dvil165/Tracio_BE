@@ -29,11 +29,11 @@ public class RouteDetailController {
         return ResponseEntity.ok(details);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getRouteDetailById(@PathVariable Integer id) {
-        RouteDetailDTO detail = routeDetailService.getRouteDetailById(id);
-        return ResponseEntity.ok(detail);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> getRouteDetailById(@PathVariable Integer id) {
+//        RouteDetailDTO detail = routeDetailService.getRouteDetailById(id);
+//        return ResponseEntity.ok(detail);
+//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateRouteDetail(@PathVariable Integer id, @RequestBody RouteDetailDTO routeDetailDTO) {

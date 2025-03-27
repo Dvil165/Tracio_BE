@@ -18,6 +18,5 @@ public class GroupRideDTO {
     private String location;
     private MatchStatus matchStatus;
     private MatchType matchType;
-
     private String matchPassword;
 }

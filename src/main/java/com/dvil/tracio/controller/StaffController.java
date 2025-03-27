@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,6 +32,18 @@ public class StaffController {
     private final OrderMapper orderMapper;
     private final UserRepo userRepo;
     private final OrderRepo orderRepo;
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderDTO>> getOrdersByStaff(@AuthenticationPrincipal UserDetails user) {
+        User staff = userRepo.findByUsername(user.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+        List<Order> orders = orderRepo.findByStaffId(staff.getId());
+        List<OrderDTO> orderDTOs = new ArrayList<>();
+        for (Order order : orders) {
+            orderDTOs.add(orderMapper.apply(order));
+        }
+        return ResponseEntity.ok(orderDTOs);
+    }
 
 
 }

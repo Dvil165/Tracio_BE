@@ -4,6 +4,8 @@ import com.dvil.tracio.dto.UserDTO;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.mapper.UserMapper;
 import com.dvil.tracio.repository.UserRepo;
+import com.dvil.tracio.request.UpdateUserInforRequest;
+import com.dvil.tracio.response.UpdateUserResponse;
 import com.dvil.tracio.service.UserService;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,18 @@ public class UserServiceImplemented implements UserService {
     @Override
     public List<User> getEmployeesByShop(Integer shopId) {
         return userRepository.findByShopId(shopId);
+    }
+
+    @Override
+    public UpdateUserResponse updateUser(Integer userid,
+                                         UpdateUserInforRequest request) {
+        User user = userRepository.findById(userid)
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUsername()));
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        User updatedUser = userRepository.save(user);
+        return new UpdateUserResponse("User successfully updated", updatedUser);
     }
 
 

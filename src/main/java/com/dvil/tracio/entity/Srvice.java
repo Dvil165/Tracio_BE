@@ -20,7 +20,7 @@ public class Srvice {
     @Column(name = "created_at", columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime createdAt;
 
-    @Column(name = "serv_description")
+    @Column(name = "serv_description", length = 1000)
     private String servDescription;
 
     @Column(name = "serv_name", nullable = false, length = 20)

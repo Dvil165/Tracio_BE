@@ -63,36 +63,34 @@
             try {
                 logger.info("Creating new service for shop: " + shop.getId());
 
-                // Kiểm tra nếu service đã tồn tại
-                Srvice srvice = srviceMapper.toEntity(srviceDTO);
-                srvice.setCreatedAt(OffsetDateTime.now());
-                srvice.setServName(srviceDTO.getServType());
-                srvice.setServDescription(srviceDTO.getServDescription());
+                // Kiểm tra xem cùng servType đã tồn tại trong shop chưa
+                boolean isShopServiceExists = shopServiceRepo.existsByShopIdAndService_ServName(
+                        shop.getId(), srviceDTO.getServType());
 
-                logger.info("Saving service: " + srvice.getServDescription());
-
-                // Lưu service
-                Srvice savedService = srviceRepo.save(srvice);
-                srviceRepo.flush();  // Đảm bảo dữ liệu được lưu ngay lập tức
-
-                // Kiểm tra xem service đã được lưu chưa
-                if (savedService == null || savedService.getId() == null) {
-                    throw new RuntimeException("Service save failed");
+                if (isShopServiceExists) {
+                    throw new RuntimeException("This service type already exists in the shop.");
                 }
 
-                logger.info("Service saved: " + savedService.getId());
+                // Nếu chưa tồn tại, tạo service mới
+                Srvice srvice = new Srvice();
+                srvice.setCreatedAt(OffsetDateTime.now());
+                srvice.setServName(srviceDTO.getServType()); // Loại dịch vụ
+                srvice.setServDescription(srviceDTO.getServDescription()); // Mô tả riêng cho shop này
+                srvice = srviceRepo.save(srvice);
+                srviceRepo.flush();
+
+                logger.info("Service saved: " + srvice.getId());
 
                 // Liên kết service với shop
                 ShopService shopService = new ShopService();
                 shopService.setCreatedAt(OffsetDateTime.now());
-                shopService.setService(savedService);
+                shopService.setService(srvice);
                 shopService.setShop(shop);
                 shopServiceRepo.save(shopService);
-                shopServiceRepo.flush(); // Đảm bảo lưu ngay lập tức
+                shopServiceRepo.flush();
 
                 logger.info("ShopService saved successfully");
-
-                return srviceMapper.toDTO(savedService);
+                return srviceMapper.toDTO(srvice);
             } catch (Exception e) {
                 logger.error("Lỗi khi lưu service: ", e);
                 throw new RuntimeException("Lỗi khi tạo service: " + e.getMessage());

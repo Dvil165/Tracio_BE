@@ -88,7 +88,8 @@ public class GroupRideServiceImpl implements GroupRideService {
 
     @Override
     @Transactional
-    public GroupRideDTO createGroupRide(GroupRideDTO groupRideDTO) {
+    public GroupRideDTO
+    createGroupRide(GroupRideDTO groupRideDTO) {
         User user = getCurrentUser();
         Route route = routeRepo.findById(groupRideDTO.getRouteId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy Route"));

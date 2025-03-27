@@ -72,22 +72,31 @@ public class BlogServiceImpl implements BlogService {
     @Transactional
     public BlogDTO updateBlog(Integer id, BlogDTO blogDTO) {
         User user = getCurrentUser();
+
         Blog existingBlog = blogRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy blog với ID " + id));
 
-        boolean isAdmin = user.getRole().equals(RoleName.ADMIN);
         boolean isOwner = existingBlog.getCreatedBy().getId().equals(user.getId());
 
-        if (!isAdmin && !isOwner) {
+        if (!isOwner) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật blog này.");
         }
 
-        existingBlog.setTitle(blogDTO.getTitle());
-        existingBlog.setContent(blogDTO.getContent());
-        existingBlog.setImageUrl(blogDTO.getImageUrl());
+        if (blogDTO.getTitle() != null && !blogDTO.getTitle().trim().isEmpty()) {
+            existingBlog.setTitle(blogDTO.getTitle());
+        }
+
+        if (blogDTO.getContent() != null && !blogDTO.getContent().trim().isEmpty()) {
+            existingBlog.setContent(blogDTO.getContent());
+        }
+
+        if (blogDTO.getImageUrl() != null && !blogDTO.getImageUrl().trim().isEmpty()) {
+            existingBlog.setImageUrl(blogDTO.getImageUrl());
+        }
 
         return blogMapper.toDTO(blogRepo.save(existingBlog));
     }
+
 
     @Override
     @Transactional

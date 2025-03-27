@@ -7,6 +7,7 @@ public interface RouteService {
     RouteDTO createRoute(RouteDTO routeDTO);
     List<RouteDTO> getAllRoutes();
     RouteDTO getRouteById(Integer id);
+    List<RouteDTO> getMyRoutes();
     RouteDTO updateRoute(Integer id, RouteDTO routeDTO);
     void deleteRoute(Integer id);
 }

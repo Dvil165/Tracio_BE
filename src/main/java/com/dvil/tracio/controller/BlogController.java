@@ -38,14 +38,14 @@ public class BlogController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()") // Chỉ cho phép user đã đăng nhập
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BlogDTO> updateBlog(@PathVariable Integer id, @RequestBody BlogDTO blogDTO) {
         BlogDTO updatedBlog = blogService.updateBlog(id, blogDTO);
         return ResponseEntity.ok(updatedBlog);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()") // Chỉ user đăng nhập mới có thể xoá
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteBlog(@PathVariable Integer id) {
         blogService.deleteBlog(id);
         return ResponseEntity.noContent().build();

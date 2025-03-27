@@ -25,7 +25,10 @@ public class RouteController {
     public ResponseEntity<RouteDTO> getRouteById(@PathVariable Integer id) {
         return ResponseEntity.ok(routeService.getRouteById(id));
     }
-
+    @GetMapping("/my-route")
+    public ResponseEntity<List<RouteDTO>> getMyRoutes() {
+        return ResponseEntity.ok(routeService.getMyRoutes());
+    }
     @PostMapping
     public ResponseEntity<RouteDTO> createRoute(@RequestBody RouteDTO routeDTO) {
         return ResponseEntity.ok(routeService.createRoute(routeDTO));

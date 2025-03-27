@@ -53,6 +53,20 @@ public class RouteServiceImpl implements RouteService {
 
         return routeMapper.toDTO(route);
     }
+    @Override
+    public List<RouteDTO> getMyRoutes() {
+        User currentUser = getCurrentUser();
+        List<Route> myRoutes = routeRepo.findByUserId(currentUser.getId());
+
+        if (myRoutes.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bạn chưa tạo lộ trình nào");
+        }
+
+        return myRoutes.stream()
+                .map(routeMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional
@@ -86,16 +100,34 @@ public class RouteServiceImpl implements RouteService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật lộ trình này");
         }
 
-        existingRoute.setRouteLength(routeDTO.getRouteLength());
-        existingRoute.setEstimatedTime(routeDTO.getEstimatedTime());
-        existingRoute.setDifficulty(routeDTO.getDifficulty());
-        existingRoute.setStartLocation(routeDTO.getStartLocation());
-        existingRoute.setDestination(routeDTO.getDestination());
-        existingRoute.setLocation(routeDTO.getLocation());
+        if (routeDTO.getRouteLength() != null) {
+            existingRoute.setRouteLength(routeDTO.getRouteLength());
+        }
+
+        if (routeDTO.getEstimatedTime() != null) {
+            existingRoute.setEstimatedTime(routeDTO.getEstimatedTime());
+        }
+
+        if (routeDTO.getDifficulty() != null && !routeDTO.getDifficulty().trim().isEmpty()) {
+            existingRoute.setDifficulty(routeDTO.getDifficulty());
+        }
+
+        if (routeDTO.getStartLocation() != null && !routeDTO.getStartLocation().trim().isEmpty()) {
+            existingRoute.setStartLocation(routeDTO.getStartLocation());
+        }
+
+        if (routeDTO.getDestination() != null && !routeDTO.getDestination().trim().isEmpty()) {
+            existingRoute.setDestination(routeDTO.getDestination());
+        }
+
+        if (routeDTO.getLocation() != null && !routeDTO.getLocation().trim().isEmpty()) {
+            existingRoute.setLocation(routeDTO.getLocation());
+        }
 
         Route updatedRoute = routeRepo.save(existingRoute);
         return routeMapper.toDTO(updatedRoute);
     }
+
 
     @Override
     @Transactional

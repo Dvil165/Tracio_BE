@@ -14,6 +14,7 @@ public interface GroupRideJoinerRepo extends JpaRepository<GroupRideJoiner, Inte
     boolean existsByGroupRideAndUser(GroupRide groupRide, User user);
     Optional<GroupRideJoiner> findByGroupRideAndUser(GroupRide groupRide, User user);
     List<GroupRideJoiner> findByGroupRide(GroupRide groupRide);
+    List<GroupRideJoiner> findByUser_Id(Integer userId);
 
 }
 

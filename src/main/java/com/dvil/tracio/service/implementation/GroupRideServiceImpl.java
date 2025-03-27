@@ -2,11 +2,13 @@ package com.dvil.tracio.service.implementation;
 
 import com.dvil.tracio.dto.GroupRideDTO;
 import com.dvil.tracio.entity.GroupRide;
+import com.dvil.tracio.entity.GroupRideJoiner;
 import com.dvil.tracio.entity.Route;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.enums.MatchType;
 import com.dvil.tracio.enums.RoleName;
 import com.dvil.tracio.mapper.GroupRideMapper;
+import com.dvil.tracio.repository.GroupRideJoinerRepo;
 import com.dvil.tracio.repository.GroupRideRepo;
 import com.dvil.tracio.repository.RouteRepo;
 import com.dvil.tracio.repository.UserRepo;
@@ -26,12 +28,19 @@ public class GroupRideServiceImpl implements GroupRideService {
     private final GroupRideRepo groupRideRepo;
     private final RouteRepo routeRepo;
     private final UserRepo userRepo;
+    private final GroupRideJoinerRepo groupRideJoinerRepo;
     private final GroupRideMapper groupRideMapper = GroupRideMapper.INSTANCE;
 
-    public GroupRideServiceImpl(GroupRideRepo groupRideRepo, RouteRepo routeRepo, UserRepo userRepo) {
+    public GroupRideServiceImpl(
+            GroupRideRepo groupRideRepo,
+            RouteRepo routeRepo,
+            UserRepo userRepo,
+            GroupRideJoinerRepo groupRideJoinerRepo
+    ) {
         this.groupRideRepo = groupRideRepo;
         this.routeRepo = routeRepo;
         this.userRepo = userRepo;
+        this.groupRideJoinerRepo = groupRideJoinerRepo;
     }
 
     @Override
@@ -49,7 +58,6 @@ public class GroupRideServiceImpl implements GroupRideService {
         return groupRides;
     }
 
-
     @Override
     public GroupRideDTO getGroupRideById(Integer id) {
         GroupRide groupRide = groupRideRepo.findById(id)
@@ -61,7 +69,7 @@ public class GroupRideServiceImpl implements GroupRideService {
     }
 
     @Override
-    public List<GroupRideDTO> getMyGroupRides() {
+    public List<GroupRideDTO> getMyCreatedGroupRides() {
         User currentUser = getCurrentUser();
         List<GroupRide> myGroupRides = groupRideRepo.findByCreatedBy_Id(currentUser.getId());
 
@@ -90,9 +98,7 @@ public class GroupRideServiceImpl implements GroupRideService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền tạo GroupRide");
         }
 
-
         GroupRide groupRide = groupRideMapper.toEntity(groupRideDTO);
-
         groupRide.setCreatedBy(user);
         groupRide.setRoute(route);
 
@@ -103,13 +109,15 @@ public class GroupRideServiceImpl implements GroupRideService {
             groupRide.setMatchPassword(groupRideDTO.getMatchPassword());
         }
 
-
         groupRide = groupRideRepo.save(groupRide);
+
+        GroupRideJoiner joiner = new GroupRideJoiner();
+        joiner.setUser(user);
+        joiner.setGroupRide(groupRide);
+        groupRideJoinerRepo.save(joiner);
+
         return groupRideMapper.toDTO(groupRide);
     }
-
-
-
 
     @Override
     @Transactional
@@ -125,7 +133,6 @@ public class GroupRideServiceImpl implements GroupRideService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật GroupRide này");
         }
 
-        // 🔥 Kiểm tra nếu đổi từ OPEN → PRIVATE thì cần mật khẩu
         if (existingGroupRide.getMatchType() == MatchType.OPEN && groupRideDTO.getMatchType() == MatchType.PRIVATE) {
             if (groupRideDTO.getMatchPassword() == null || groupRideDTO.getMatchPassword().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần nhập mật khẩu khi chuyển từ OPEN sang PRIVATE");
@@ -143,8 +150,6 @@ public class GroupRideServiceImpl implements GroupRideService {
 
         return groupRideMapper.toDTO(groupRideRepo.save(existingGroupRide));
     }
-
-
 
     @Override
     @Transactional

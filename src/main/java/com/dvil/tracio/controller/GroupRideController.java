@@ -29,8 +29,8 @@ public class GroupRideController {
     }
 
     @GetMapping("/my-group")
-    public ResponseEntity<List<GroupRideDTO>> getMyGroupRides() {
-        return ResponseEntity.ok(groupRideService.getMyGroupRides());
+    public ResponseEntity<List<GroupRideDTO>> getMyCreatedGroupRides() {
+        return ResponseEntity.ok(groupRideService.getMyCreatedGroupRides());
     }
 
     // 🚀 Tạo mới GroupRide (PRIVATE cần mật khẩu)

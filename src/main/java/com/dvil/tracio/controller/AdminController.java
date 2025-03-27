@@ -2,14 +2,10 @@ package com.dvil.tracio.controller;
 
 
 import com.dvil.tracio.dto.ShopRequestDTO;
-import com.dvil.tracio.dto.UserDTO;
-import com.dvil.tracio.entity.ShopRequest;
 import com.dvil.tracio.entity.User;
 import com.dvil.tracio.repository.UserRepo;
 import com.dvil.tracio.request.AdminRegisterRequest;
-import com.dvil.tracio.request.CreateShopRequest;
 import com.dvil.tracio.response.AdminRegisterResponse;
-import com.dvil.tracio.response.CreateShopResponse;
 import com.dvil.tracio.service.implementation.AdminServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

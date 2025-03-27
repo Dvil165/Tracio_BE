@@ -1,18 +1,26 @@
 package com.dvil.tracio.mapper;
 
 import com.dvil.tracio.dto.OrderDTO;
+import com.dvil.tracio.dto.ProductDTO;
 import com.dvil.tracio.entity.Order;
+import com.dvil.tracio.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Service;
 
-@Mapper
-public interface OrderMapper {
-    OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
+import java.util.function.Function;
 
-    @Mapping(source = "user.id", target = "userId")
-    OrderDTO toDTO(Order order);
-
-    @Mapping(source = "userId", target = "user.id")
-    Order toEntity(OrderDTO orderDTO);
+@Service
+public class OrderMapper implements Function<Order, OrderDTO> {
+    @Override
+    public OrderDTO apply(Order order) {
+        return new OrderDTO(
+                order.getId(),
+                order.getShop().getId(),
+                order.getStaff().getUsername(),
+                order.getStatus(),
+                order.getTotalPrice()
+        );
+    }
 }

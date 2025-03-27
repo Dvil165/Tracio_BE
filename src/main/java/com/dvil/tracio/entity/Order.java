@@ -1,5 +1,7 @@
 package com.dvil.tracio.entity;
 
+import com.dvil.tracio.enums.OrderStatus;
+import com.dvil.tracio.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,8 +32,14 @@ public class Order {
     @Column(name = "order_date", nullable = false, columnDefinition = "DATETIMEOFFSET")
     private OffsetDateTime orderDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 50)
-    private String status;
+    private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
+
 
     @Column(name = "total_price", nullable = false)
     private Double totalPrice;

@@ -1,2 +1,8 @@
-package com.dvil.tracio.enums;public class OrderStatus {
+package com.dvil.tracio.enums;
+
+public enum OrderStatus {
+    PENDING,
+    PROCESSING,
+    CANCELLED,
+    COMPLETED
 }

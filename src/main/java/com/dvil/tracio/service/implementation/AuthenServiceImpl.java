@@ -122,7 +122,7 @@ public class AuthenServiceImpl implements AuthenticationService {
                 }
             }
             return new LoginResponse(user.getUsername(), user.getEmail(), user.getAccessToken()
-                                   , user.getRefToken(), user.getRole(), user.getShop().getId());
+                                   , user.getRefToken(), user.getRole(), user.getShop() == null ? null : user.getShop().getId());
         } catch (BadCredentialsException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sai tên đăng nhập hoặc mật khẩu");
         }
